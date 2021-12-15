@@ -12,7 +12,8 @@ int main(int argc, char** argv){
         fprintf(stderr, "ファイルが開けない");
         return 1;
     }
-    fread(jit->mem, 1, 512, binary);
+    jit->eip = 0x7c00;
+    fread(jit->mem + 0x7c00, 1, 0x200, binary);
     while(jit->eip<MEM_SIZE){
         jit->Run();
         if(jit->eip==0){

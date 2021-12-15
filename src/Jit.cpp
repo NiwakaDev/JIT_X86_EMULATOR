@@ -8,6 +8,8 @@ Jit::Jit(){
     for(int i=0; i<INSTRUCTION_SIZE; i++){
         this->instructions[i] = NULL;
     }
+    this->instructions[0x83] = new Code83("Code83");
+    //this->instructions[0x89] = new MovRm32R32("MovRm32R32");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0xB8+i] = new MovR32Imm32("MovR32Imm32");
     }
@@ -29,6 +31,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eflags(eax);//eaxをeflagsとして扱う
     const Reg64 save_registers(rbx);//これは番地として扱うので、64bitレジスタ
 
     bool stop = false;
@@ -50,6 +53,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->push(r15);
 
 	code->mov(jit_eax, this->save_registers_[EAX]);
+	code->mov(jit_esp, this->save_registers_[ESP]);
+    code->mov(jit_eflags, this->eflags.raw);
     while(!stop){
         uint8_t op_code = this->mem[this->eip];
         if(this->instructions[op_code]==NULL){
@@ -58,8 +63,16 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
         }
         this->instructions[op_code]->CompileStep(code, &stop, this);
     }
+    //eaxを保存
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(dword [save_registers], jit_eax);
+    //espを保存
+    code->mov(rcx, 4);
+    code->mov(dword [save_registers+rcx*4], jit_esp);
+    //eflagsを保存
+    code->mov(save_registers, (size_t)&this->eflags.raw);
+    code->mov(dword [save_registers], jit_eflags);
+
     code->pop(r15);
     code->pop(r14);
     code->pop(r13);
@@ -94,8 +107,16 @@ void Jit::Run(){
         code = this->CompileBlock();
         this->eip2code[first_eip] = code;
     }
+    fprintf(stderr, "before:\n");
+    fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
+    fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
+    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+    fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
     void (*f)() = (void (*)())code->getCode();
     f();
-    fprintf(stderr, "eax=0x%08X\n", this->save_registers_[EAX]);
-    fprintf(stderr, "eip=0x%08X\n", this->eip);
+    fprintf(stderr, "after:\n");
+    fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
+    fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
+    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+    fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
 }
