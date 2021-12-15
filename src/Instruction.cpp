@@ -3,11 +3,11 @@
 
 using namespace std;
 
-InstructionBase::InstructionBase(string name){
+Instruction::Instruction(string name){
     this->code_name = name;
 }
 
-inline void InstructionBase::ParseModRM(Jit* jit){
+inline void Instruction::ParseModRM(Jit* jit){
     uint8_t code;
     code = jit->mem[jit->eip];
     this->modrm.mod = ((code&0xC0)>>6);
@@ -30,7 +30,7 @@ inline void InstructionBase::ParseModRM(Jit* jit){
     }
 }
 
-MovR32Imm32::MovR32Imm32(string name):InstructionBase(name){
+MovR32Imm32::MovR32Imm32(string name):Instruction(name){
 
 }
 
@@ -59,7 +59,7 @@ void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     return;
 }
 
-JmpRel8::JmpRel8(string name):InstructionBase(name){
+JmpRel8::JmpRel8(string name):Instruction(name){
 
 }
 
@@ -82,7 +82,7 @@ void JmpRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     return;
 }
 
-Code83::Code83(string name):InstructionBase(name){
+Code83::Code83(string name):Instruction(name){
     for(int i=0; i<INSTRUCTION_SET_SMALL_SIZE; i++){
         this->instructions[i] = NULL;
     }
@@ -111,7 +111,7 @@ void Code83::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     return;
 }
 
-SubRm32Imm8::SubRm32Imm8(string name):InstructionBase(name){
+SubRm32Imm8::SubRm32Imm8(string name):Instruction(name){
 
 }
 
@@ -185,7 +185,7 @@ void SubRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     return;
 }
 
-MovRm32R32::MovRm32R32(string name):InstructionBase(name){
+MovRm32R32::MovRm32R32(string name):Instruction(name){
 
 }
 
@@ -203,7 +203,6 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
 
-    *stop = true;
     jit->eip++;
     this->ParseModRM(jit);
 
@@ -261,5 +260,358 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
                 this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
         }
     }
+    return;
+}
+
+MovRm32Imm32::MovRm32Imm32(string name):Instruction(name){
+
+}
+
+void MovRm32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 r32(rcx);       
+    const Reg64 rm32(rdx);
+
+    jit->eip++;
+    this->ParseModRM(jit);
+    uint32_t imm32 = jit->Read32(jit->eip);
+    jit->eip += 4;
+
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+    
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==5){
+            addr = this->modrm.disp32;
+            addr = jit->GetLinearAddrForDataAccess(addr);
+        }
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+        code->mov(rm32, (size_t)&addr);
+        code->mov(dword [rm32], imm32);
+        return;
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp32 = (int32_t)this->modrm.disp32;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==3){
+        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
+        switch(register_kind){
+            case EAX:
+                code->mov(jit_eax, imm32);
+                break;
+            default:
+                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
+        }
+        return;
+    }
+}
+
+AddRm32R32::AddRm32R32(string name):Instruction(name){
+
+}
+
+void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 r32(rcx);       
+    const Reg64 rm32(rdx);
+
+    jit->eip++;
+    this->ParseModRM(jit);
+
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            code->mov(r32, jit_eax);
+            break;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+    }
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==5){
+            addr = this->modrm.disp32;
+            addr = jit->GetLinearAddrForDataAccess(addr);
+        }
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+        code->mov(rm32, (size_t)&addr);
+        code->add(dword [rm32], r32);
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp32 = (int32_t)this->modrm.disp32;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==3){
+        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
+        switch(register_kind){
+            default:
+                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
+        }
+        return;
+    }
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
+    return;
+}
+
+MovR32Rm32::MovR32Rm32(string name):Instruction(name){
+
+}
+
+void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 r32(rcx);       
+    const Reg64 rm32(rdx);
+
+    jit->eip++;
+    this->ParseModRM(jit);
+
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==5){
+            addr = this->modrm.disp32;
+            addr = jit->GetLinearAddrForDataAccess(addr);
+        }
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+        code->mov(rm32, (size_t)&addr);
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp32 = (int32_t)this->modrm.disp32;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==3){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
+        switch(register_kind){
+            default:
+                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
+        }
+        return;
+    }
+
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case ESI:
+            code->mov(jit_esi, dword [rm32]);
+            break;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+    }
+    return;
+}
+
+CodeFF::CodeFF(string code_name):Instruction(code_name){
+    for(int i=0; i<INSTRUCTION_SET_SMALL_SIZE; i++){
+        this->instructions[i] = NULL;
+    }
+    this->instructions[0] = new IncRm32("IncRm32");
+}
+
+void CodeFF::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    jit->eip++;
+    this->ParseModRM(jit);
+    if(this->instructions[this->modrm.reg_index]==NULL){
+            this->Error("Not implemented: FF /%02X at %s::Run", this->modrm.reg_index, this->code_name.c_str());
+    }
+    this->instructions[this->modrm.reg_index]->SetModRM(&this->modrm);
+    this->instructions[this->modrm.reg_index]->CompileStep(code, stop, jit);
+    return;
+}
+
+IncRm32::IncRm32(string name):Instruction(name){
+
+}
+
+void IncRm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 rm32(rcx);       
+
+    jit->eip++;
+    this->ParseModRM(jit);
+
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==5){
+            addr = this->modrm.disp32;
+            addr = jit->GetLinearAddrForDataAccess(addr);
+        }
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+        code->mov(rm32, (size_t)&addr);
+        code->inc(dword [rm32]);
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
+        }
+        disp32 = (int32_t)this->modrm.disp32;
+        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
+        addr = jit->GetLinearAddrForDataAccess(addr);
+    }else if(this->modrm.mod==3){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
+        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
+        switch(register_kind){
+            default:
+                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
+        }
+        return;
+    }
+
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
+    return;
+}
+
+JmpRel32::JmpRel32(string name):Instruction(name){
+
+}
+
+void JmpRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+
+    *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
+    jit->eip++;
+    uint32_t rel32 = jit->Read32(jit->eip);
+    jit->eip = jit->eip + rel32 + 4;
     return;
 }

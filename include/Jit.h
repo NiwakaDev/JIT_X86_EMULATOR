@@ -1,6 +1,6 @@
 #include "common.h"
 
-class InstructionBase;
+class Instruction;
 #define  MEM_SIZE 1024 * 1024
 #define INIT_EIP 0x7c00
 #define INSTRUCTION_SIZE 256
@@ -9,7 +9,7 @@ enum REGISTER_KIND {EAX , ECX, EDX, EBX, ESP, EBP, ESI, EDI, REGISTER_KIND_TOTAL
 
 class Jit:public Object{
     public:
-        InstructionBase* instructions[INSTRUCTION_SIZE];
+        Instruction* instructions[INSTRUCTION_SIZE];
         uint8_t* mem;
         uint32_t eip;
         uint32_t save_registers_[REGISTER_KIND_TOTAL];//保存領域
@@ -52,4 +52,5 @@ class Jit:public Object{
                 unsigned ID : 1;
             }flgs;
         }eflags;
+        uint32_t Read32(uint32_t addr);
 };
