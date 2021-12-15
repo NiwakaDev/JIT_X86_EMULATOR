@@ -43,10 +43,8 @@ class SubRm32Imm8:public InstructionBase{
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
 
-/***
 class MovRm32R32:public InstructionBase{
     public:
         MovRm32R32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
-***/

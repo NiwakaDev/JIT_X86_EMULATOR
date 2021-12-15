@@ -9,7 +9,7 @@ Jit::Jit(){
         this->instructions[i] = NULL;
     }
     this->instructions[0x83] = new Code83("Code83");
-    //this->instructions[0x89] = new MovRm32R32("MovRm32R32");
+    this->instructions[0x89] = new MovRm32R32("MovRm32R32");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0xB8+i] = new MovR32Imm32("MovR32Imm32");
     }
