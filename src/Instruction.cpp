@@ -127,7 +127,6 @@ void SubRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    *stop = true;
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
     jit->eip++;
     uint32_t rm32;
@@ -202,14 +201,24 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
+    const Reg64 r32(rcx);       
+
     *stop = true;
-    uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
     jit->eip++;
+    this->ParseModRM(jit);
+
     uint32_t rm32;
     uint32_t addr;
     uint32_t disp8;
     uint32_t disp32;
-
+    
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case ESP:
+            code->mov(r32, jit_esp);
+            break;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+    }
     //TODO:
     //アドレッシングモードは関数化すべき。
     if(this->modrm.mod!=3 && this->modrm.rm==4){
@@ -245,18 +254,12 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
-            case ESP:
-                code->sub(jit_esp, imm8);
+            case EBP:
+                code->mov(jit_ebp, r32);
                 break;
             default:
                 this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
         }
     }
-    //TODO:
-    //余計なフラグ情報まで更新している。
-    //特定のフラグのみを更新するようにすべき。
-    //フラグ更新処理
-    code->pushfq();
-    code->pop(jit_eflags);
     return;
 }

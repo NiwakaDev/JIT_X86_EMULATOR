@@ -54,6 +54,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 
 	code->mov(jit_eax, this->save_registers_[EAX]);
 	code->mov(jit_esp, this->save_registers_[ESP]);
+    code->mov(jit_ebp, this->save_registers_[EBP]);
     code->mov(jit_eflags, this->eflags.raw);
     while(!stop){
         uint8_t op_code = this->mem[this->eip];
@@ -69,6 +70,9 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     //espを保存
     code->mov(rcx, 4);
     code->mov(dword [save_registers+rcx*4], jit_esp);
+    //ebpを保存
+    code->mov(rcx, 5);
+    code->mov(dword [save_registers+rcx*4], jit_ebp);
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(dword [save_registers], jit_eflags);
@@ -110,13 +114,15 @@ void Jit::Run(){
     fprintf(stderr, "before:\n");
     fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
     fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
-    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+    fprintf(stderr, "ebp   = 0x%08X\n", this->save_registers_[EBP]);
+    //fprintf(stderr, "eip   = 0x%08X\n", this->eip);
     fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
     void (*f)() = (void (*)())code->getCode();
     f();
     fprintf(stderr, "after:\n");
     fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
     fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
-    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+    fprintf(stderr, "ebp   = 0x%08X\n", this->save_registers_[EBP]);
+    //fprintf(stderr, "eip   = 0x%08X\n", this->eip);
     fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
 }
