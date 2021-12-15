@@ -140,7 +140,7 @@ void Jit::Run(){
     fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
     fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
     fprintf(stderr, "eip   = 0x%08X\n", this->eip);
-    fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
+    //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);eflagsはまだ本で登場しない
     void (*f)() = (void (*)())code->getCode();
     f();
     fprintf(stderr, "after:\n");
@@ -153,5 +153,5 @@ void Jit::Run(){
     fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
     fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
     fprintf(stderr, "eip   = 0x%08X\n", this->eip);
-    fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
+    //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
 }
