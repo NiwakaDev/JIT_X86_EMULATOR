@@ -18,14 +18,6 @@ class Jit:public Object{
         void Run();
         Xbyak::CodeGenerator* CompileBlock();
         bool IsCompiledBlock(uint32_t eip);
-        //今後のことを考えて、この関数を用意。
-        uint32_t GetLinearAddrForCodeAccess(){
-            return this->eip;
-        }
-        //今後のことを考えて、この関数を用意。
-        uint32_t GetLinearAddrForDataAccess(uint32_t offset){
-            return offset;
-        }
         union{
             uint32_t raw;
             struct{

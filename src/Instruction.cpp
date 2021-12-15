@@ -141,31 +141,13 @@ void SubRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==1){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp8 = (int32_t)this->modrm.disp8;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
@@ -225,31 +207,11 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==1){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp8 = (int32_t)this->modrm.disp8;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: %s::GetRM32", this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
@@ -298,33 +260,18 @@ void MovRm32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit)
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==1){
         if(this->modrm.rm==4){
             this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
         }
         disp8 = (int32_t)this->modrm.disp8;
         addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
         code->mov(rm32, (size_t)&addr);
         code->mov(dword [rm32], imm32);
         return;
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
@@ -377,32 +324,17 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==1){
         if(this->modrm.rm==4){
             this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
         }
         disp8 = (int32_t)this->modrm.disp8;
         addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
         code->mov(rm32, (size_t)&addr);
         code->add(dword [rm32], r32);
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
@@ -453,39 +385,19 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==1){
         if(this->modrm.rm==4){
             this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
         }
         disp8 = (int32_t)this->modrm.disp8;
         addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
         code->mov(rm32, (size_t)&addr);
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==3){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
-        switch(register_kind){
-            default:
-                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
-        }
-        return;
     }
 
     switch((REGISTER_KIND)this->modrm.reg_index){
@@ -548,40 +460,21 @@ void IncRm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }
     if(this->modrm.mod==0){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==5){
-            addr = this->modrm.disp32;
-            addr = jit->GetLinearAddrForDataAccess(addr);
-        }
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm];
-        addr = jit->GetLinearAddrForDataAccess(addr);
     }else if(this->modrm.mod==1){
         if(this->modrm.rm==4){
             this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
         }
         disp8 = (int32_t)this->modrm.disp8;
         addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp8;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
         code->mov(rm32, (size_t)&addr);
         code->inc(dword [rm32]);
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        if(this->modrm.rm==4){
-            this->Error("Not implemented: sib at %s::GetRM32", this->code_name.c_str());
-        }
-        disp32 = (int32_t)this->modrm.disp32;
-        addr = jit->save_registers_[(REGISTER_KIND)this->modrm.rm]+disp32;
-        addr = jit->GetLinearAddrForDataAccess(addr);
+
     }else if(this->modrm.mod==3){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
-        REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
-        switch(register_kind){
-            default:
-                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
-        }
-        return;
+
     }
 
     //TODO:
