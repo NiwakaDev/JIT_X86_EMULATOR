@@ -430,6 +430,9 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
             case ESI:
                 code->mov(jit_esi, dword [mem]);
                 break;
+            case EDI:
+                code->mov(jit_edi, dword [mem]);
+                break;
             default:
                 this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
         }
@@ -478,9 +481,6 @@ void IncRm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 rm32(rcx);       
     const Reg32 effective_addr(ebx); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-
-    jit->eip++;
-    this->ParseModRM(jit);
 
     uint32_t addr;
     uint32_t disp8;
