@@ -11,6 +11,8 @@ class Instruction:public Object{
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data);
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
+        void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg32 dest_reg, const Xbyak::Reg64 mem);
+
     public:
         std::string code_name;
         Instruction(std::string name);
@@ -105,5 +107,11 @@ class Ret32Near:public Instruction{
 class PushR32:public Instruction{
     public:
         PushR32(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class Leave:public Instruction{
+    public:
+        Leave(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };

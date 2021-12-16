@@ -70,6 +70,17 @@ void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Addre
     code->add(jit_esp, 4);
 }
 
+void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg32 dest_reg, const Xbyak::Reg64 mem){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 data(esi);
+
+    code->add(mem, jit_esp);
+    code->mov(dest_reg, dword [mem]);  
+    code->add(jit_esp, 4);
+}
+
 MovR32Imm32::MovR32Imm32(string name):Instruction(name){
 
 }
@@ -689,5 +700,32 @@ void PushR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         default:
             this->Error("Not implemented: register_type=%d\n", register_type);
     }
+    return;
+}
+
+Leave::Leave(string name):Instruction(name){
+
+}
+
+void Leave::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+    code->mov(mem, (size_t)jit->mem);
+    //Leave命令
+    //ESPにEBPを格納する
+    //スタックからPOPし、EBPに格納する
+    jit->eip++;
+    code->mov(jit_esp, jit_ebp);
+    this->Pop32(code, jit, jit_ebp, mem);
     return;
 }

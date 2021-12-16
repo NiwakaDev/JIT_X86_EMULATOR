@@ -20,6 +20,7 @@ Jit::Jit(){
     }
     this->instructions[0xC3] = new Ret32Near("Ret32Near");
     this->instructions[0xC7] = new MovRm32Imm32("MovRm32Imm32");
+    this->instructions[0xC9] = new Leave("Leave");
     this->instructions[0xE8] = new CallRel32("CallRel32");
     this->instructions[0xE9] = new JmpRel32("JmpRel32");
     this->instructions[0xEB] = new JmpRel8("JmpRel8");
@@ -82,6 +83,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 	code->mov(jit_eax, this->save_registers_[EAX]);
     code->mov(jit_ebx, this->save_registers_[EBX]);
     code->mov(jit_ecx, this->save_registers_[ECX]);
+    code->mov(jit_edx, this->save_registers_[EDX]);
 	code->mov(jit_esp, this->save_registers_[ESP]);
     code->mov(jit_ebp, this->save_registers_[EBP]);
     code->mov(jit_esi, this->save_registers_[ESI]);
@@ -95,28 +97,27 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
             exit(1);
         }
         this->instructions[op_code]->CompileStep(code, &stop, this);
+        #ifdef DEBUG
+            stop = true;//デバッグ時は1つの機械語命令でコンパイルを終了。
+        #endif
     }
     //eaxを保存
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(dword [save_registers], jit_eax);
     //ecxを保存
-    code->mov(rcx, 1);
-    code->mov(dword [save_registers+rcx*4], jit_ecx);
+    code->mov(dword [save_registers+1*4], jit_ecx);
+    //edxを保存
+    code->mov(dword [save_registers+2*4], jit_edx);
     //ebxを保存
-    code->mov(rcx, 3);
-    code->mov(dword [save_registers+rcx*4], jit_ebx);
+    code->mov(dword [save_registers+3*4], jit_ebx);
     //espを保存
-    code->mov(rcx, 4);
-    code->mov(dword [save_registers+rcx*4], jit_esp);
+    code->mov(dword [save_registers+4*4], jit_esp);
     //ebpを保存
-    code->mov(rcx, 5);
-    code->mov(dword [save_registers+rcx*4], jit_ebp);
+    code->mov(dword [save_registers+5*4], jit_ebp);
     //esiを保存
-    code->mov(rcx, 6);
-    code->mov(dword [save_registers+rcx*4], jit_esi);
+    code->mov(dword [save_registers+6*4], jit_esi);
     //ediを保存
-    code->mov(rcx, 7);
-    code->mov(dword [save_registers+rcx*4], jit_edi);
+    code->mov(dword [save_registers+7*4], jit_edi);
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(dword [save_registers], jit_eflags);
@@ -155,32 +156,10 @@ void Jit::Run(){
         code = this->CompileBlock();
         this->eip2code[first_eip] = code;
     }
-    /***
     fprintf(stderr, "before:\n");
-    fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
-    fprintf(stderr, "ecx   = 0x%08X\n", this->save_registers_[ECX]);
-    fprintf(stderr, "edx   = 0x%08X\n", this->save_registers_[EDX]);
-    fprintf(stderr, "ebx   = 0x%08X\n", this->save_registers_[EBX]);
-    fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
-    fprintf(stderr, "ebp   = 0x%08X\n", this->save_registers_[EBP]);
-    fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
-    fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
-    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
-    ***/
-    //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);eflagsはまだ本で登場しない
+    this->ShowRegisters();
     void (*f)() = (void (*)())code->getCode();
     f();
-    /***
     fprintf(stderr, "after:\n");
-    fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
-    fprintf(stderr, "ecx   = 0x%08X\n", this->save_registers_[ECX]);
-    fprintf(stderr, "edx   = 0x%08X\n", this->save_registers_[EDX]);
-    fprintf(stderr, "ebx   = 0x%08X\n", this->save_registers_[EBX]);
-    fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
-    fprintf(stderr, "ebp   = 0x%08X\n", this->save_registers_[EBP]);
-    fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
-    fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
-    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
-    //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
-    ***/
+    this->ShowRegisters();
 }
