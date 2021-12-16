@@ -14,9 +14,13 @@ int main(int argc, char** argv){
     }
     jit->eip = 0x7c00;
     fread(jit->mem + 0x7c00, 1, 0x200, binary);
+    fprintf(stderr, "before:\n");
+    jit->ShowRegisters();
     while(jit->eip<MEM_SIZE){
         jit->Run();
         if(jit->eip==0){
+            fprintf(stderr, "after:\n");
+            jit->ShowRegisters();
             fprintf(stderr, "End of program\n");
             break;
         }

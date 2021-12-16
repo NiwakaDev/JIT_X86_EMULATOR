@@ -26,6 +26,18 @@ Jit::Jit(){
     }
 }
 
+void Jit::ShowRegisters(){
+    fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
+    fprintf(stderr, "ecx   = 0x%08X\n", this->save_registers_[ECX]);
+    fprintf(stderr, "edx   = 0x%08X\n", this->save_registers_[EDX]);
+    fprintf(stderr, "ebx   = 0x%08X\n", this->save_registers_[EBX]);
+    fprintf(stderr, "esp   = 0x%08X\n", this->save_registers_[ESP]);
+    fprintf(stderr, "ebp   = 0x%08X\n", this->save_registers_[EBP]);
+    fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
+    fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
+    fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+}
+
 //TODO:セグメントフォールトが起こる可能性があるが、今の所は無視
 uint32_t Jit::Read32(uint32_t addr){
     return *(uint32_t*)(this->mem+addr);
@@ -140,6 +152,7 @@ void Jit::Run(){
         code = this->CompileBlock();
         this->eip2code[first_eip] = code;
     }
+    /***
     fprintf(stderr, "before:\n");
     fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
     fprintf(stderr, "ecx   = 0x%08X\n", this->save_registers_[ECX]);
@@ -150,9 +163,11 @@ void Jit::Run(){
     fprintf(stderr, "esi   = 0x%08X\n", this->save_registers_[ESI]);
     fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
     fprintf(stderr, "eip   = 0x%08X\n", this->eip);
+    ***/
     //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);eflagsはまだ本で登場しない
     void (*f)() = (void (*)())code->getCode();
     f();
+    /***
     fprintf(stderr, "after:\n");
     fprintf(stderr, "eax   = 0x%08X\n", this->save_registers_[EAX]);
     fprintf(stderr, "ecx   = 0x%08X\n", this->save_registers_[ECX]);
@@ -164,4 +179,5 @@ void Jit::Run(){
     fprintf(stderr, "edi   = 0x%08X\n", this->save_registers_[EDI]);
     fprintf(stderr, "eip   = 0x%08X\n", this->eip);
     //fprintf(stderr, "eflags= 0x%08X\n", this->eflags.raw);
+    ***/
 }

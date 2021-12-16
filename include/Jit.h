@@ -45,4 +45,5 @@ class Jit:public Object{
             }flgs;
         }eflags;
         uint32_t Read32(uint32_t addr);
+        void ShowRegisters();
 };
