@@ -729,3 +729,31 @@ void Leave::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     this->Pop32(code, jit, jit_ebp, mem);
     return;
 }
+
+PushImm8::PushImm8(string name):Instruction(name){
+
+}
+
+void PushImm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+    code->mov(mem, (size_t)jit->mem);
+    //Leave命令
+    //ESPにEBPを格納する
+    //スタックからPOPし、EBPに格納する
+    jit->eip++;
+    uint32_t imm32 = (int32_t)(int8_t)jit->mem[jit->eip];
+    jit->eip++;
+    this->Push32(code, jit, mem, imm32);
+    return;
+}

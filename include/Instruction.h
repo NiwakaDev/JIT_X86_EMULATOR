@@ -115,3 +115,9 @@ class Leave:public Instruction{
         Leave(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class PushImm8:public Instruction{
+    public:
+        PushImm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
