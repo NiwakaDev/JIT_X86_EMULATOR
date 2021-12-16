@@ -43,6 +43,19 @@ void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg6
     code->mov(mem, data);
 }
 
+//mem       : jitのメモリ領域
+//reg       : pushされるレジスタ
+void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+
+    code->mov(mem, (size_t)jit->mem);
+    code->sub(jit_esp, 4);
+    code->add(mem, jit_esp);
+    code->mov(mem, reg);
+}
+
 //dest_addr : 保存先アドレス
 //mem       : jitのメモリ領域
 void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
@@ -463,6 +476,9 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         //jit->mem[effective_addr]++したい。
         code->add(mem, effective_addr);
         switch((REGISTER_KIND)this->modrm.reg_index){
+            case EAX:
+                code->mov(jit_eax, dword [mem]);
+                break;
             case ESI:
                 code->mov(jit_esi, dword [mem]);
                 break;
@@ -470,7 +486,7 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
                 code->mov(jit_edi, dword [mem]);
                 break;
             default:
-                this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+                this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::CompileStep", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
         }
         return;
     }else if(this->modrm.mod==2){
@@ -642,5 +658,36 @@ void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     code->mov(jit_eip, (size_t)&jit->eip);
 
     this->Pop32(code, jit, dword [jit_eip], mem);
+    return;
+}
+
+PushR32::PushR32(string name):Instruction(name){
+
+}
+
+void PushR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+
+    code->mov(mem, (size_t)jit->mem);
+    REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x50);
+    jit->eip++;
+    switch(register_type){
+        case EBP:
+            this->Push32(code, jit, mem, jit_ebp);
+            break;
+        default:
+            this->Error("Not implemented: register_type=%d\n", register_type);
+    }
     return;
 }

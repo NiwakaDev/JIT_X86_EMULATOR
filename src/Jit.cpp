@@ -9,6 +9,9 @@ Jit::Jit(){
         this->instructions[i] = NULL;
     }
     this->instructions[0x01] = new AddRm32R32("AddRm32R32");
+    for(int i=0; i<REGISTER_KIND_TOTAL; i++){
+        this->instructions[0x50+i] = new PushR32("PushR32");
+    }
     this->instructions[0x83] = new Code83("Code83");
     this->instructions[0x89] = new MovRm32R32("MovRm32R32");
     this->instructions[0x8B] = new MovR32Rm32("MovR32Rm32");

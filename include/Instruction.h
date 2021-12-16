@@ -9,6 +9,7 @@ class Instruction:public Object{
         ModRM modrm;
         void ParseModRM(Jit* jit);
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data);
+        void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
     public:
         std::string code_name;
@@ -98,5 +99,11 @@ class CallRel32:public Instruction{
 class Ret32Near:public Instruction{
     public:
         Ret32Near(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class PushR32:public Instruction{
+    public:
+        PushR32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
