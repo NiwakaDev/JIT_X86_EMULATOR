@@ -86,3 +86,9 @@ class JmpRel32:public Instruction{
         JmpRel32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class CallRel32:public Instruction{
+    public:
+        CallRel32(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

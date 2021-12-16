@@ -50,8 +50,11 @@ void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     uint32_t imm32 = jit->mem[jit->eip];
     jit->eip += 4;
     switch(register_type){
-        case 0:
+        case EAX:
             code->mov(jit_eax, imm32);
+            break;
+        case EBX:
+            code->mov(jit_ebx, imm32);
             break;
         default:
             this->Error("Not implemented: register_type=%d at %s::CompileStep\n", register_type, this->code_name.c_str());
@@ -547,6 +550,42 @@ void JmpRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     jit->eip++;
     uint32_t rel32 = jit->Read32(jit->eip);
+    jit->eip = jit->eip + rel32 + 4;
+    return;
+}
+
+CallRel32::CallRel32(string name):Instruction(name){
+
+}
+
+void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+
+    *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
+    jit->eip++;
+    uint32_t rel32 = jit->Read32(jit->eip);
+
+    //PUSH命令の手順
+    //1.まずはESPから4引く
+    //2.次にESPが示す番地にデータを書き込む
+    //call命令の次の番地をpushする。
+    code->mov(mem, (size_t)jit->mem);
+    code->sub(jit_esp, 4);
+    code->add(mem, jit_esp);
+    code->mov(mem, jit->eip+4);
+    
+    //ジャンプ
     jit->eip = jit->eip + rel32 + 4;
     return;
 }
