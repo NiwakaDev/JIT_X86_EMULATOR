@@ -600,6 +600,20 @@ Ret32Near::Ret32Near(string name):Instruction(name){
 
 }
 
+//dest_addr : 保存先アドレス
+//mem       : jitのメモリ領域
+void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 data(esi);
+
+    code->add(mem, jit_esp);
+    code->mov(esi, dword [mem]);
+    code->mov(dest_addr, esi);  
+    code->add(jit_esp, 4);
+}
+
 void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     using namespace Xbyak::util;
 	using namespace Xbyak;
@@ -620,16 +634,7 @@ void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     jit->eip++;
     code->mov(mem, (size_t)jit->mem);
     code->mov(jit_eip, (size_t)&jit->eip);
-    //Ret32Nearの手順
-    //1 : 4バイトをESPからPOP
-    //2 : EIPにそれをセットする
 
-    //POPの手順
-    //まずはデータをESPから取り出す。
-    //ESPに4を足す。
-    code->add(mem, jit_esp);
-    code->mov(esi, dword [mem]);
-    code->mov(dword [jit_eip], esi);  
-    code->add(jit_esp, 4);
+    Pop32(code, jit, dword [jit_eip], mem);
     return;
 }
