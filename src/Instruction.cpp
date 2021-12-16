@@ -30,6 +30,33 @@ inline void Instruction::ParseModRM(Jit* jit){
     }
 }
 
+//mem       : jitのメモリ領域
+//data      : pushされるデータ
+void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+
+    code->mov(mem, (size_t)jit->mem);
+    code->sub(jit_esp, 4);
+    code->add(mem, jit_esp);
+    code->mov(mem, data);
+}
+
+//dest_addr : 保存先アドレス
+//mem       : jitのメモリ領域
+void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 data(esi);
+
+    code->add(mem, jit_esp);
+    code->mov(esi, dword [mem]);
+    code->mov(dest_addr, esi);  
+    code->add(jit_esp, 4);
+}
+
 MovR32Imm32::MovR32Imm32(string name):Instruction(name){
 
 }
@@ -582,14 +609,7 @@ void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     jit->eip++;
     uint32_t rel32 = jit->Read32(jit->eip);
 
-    //PUSH命令の手順
-    //1.まずはESPから4引く
-    //2.次にESPが示す番地にデータを書き込む
-    //call命令の次の番地をpushする。
-    code->mov(mem, (size_t)jit->mem);
-    code->sub(jit_esp, 4);
-    code->add(mem, jit_esp);
-    code->mov(mem, jit->eip+4);
+    this->Push32(code, jit, mem, jit->eip+4);
 
     //ジャンプ
     jit->eip = jit->eip + rel32 + 4;
@@ -598,20 +618,6 @@ void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 
 Ret32Near::Ret32Near(string name):Instruction(name){
 
-}
-
-//dest_addr : 保存先アドレス
-//mem       : jitのメモリ領域
-void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 data(esi);
-
-    code->add(mem, jit_esp);
-    code->mov(esi, dword [mem]);
-    code->mov(dest_addr, esi);  
-    code->add(jit_esp, 4);
 }
 
 void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){

@@ -8,6 +8,7 @@ class Instruction:public Object{
     protected:
         ModRM modrm;
         void ParseModRM(Jit* jit);
+        void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
     public:
         std::string code_name;
