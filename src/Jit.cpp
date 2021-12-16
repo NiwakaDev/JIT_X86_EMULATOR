@@ -69,14 +69,16 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     const Reg64 save_registers(rbx);//これは番地として扱うので、64bitレジスタ
 
     bool stop = false;
+    code->push(rbp);
+    code->mov(rbp, rsp);
     code->push(rax);
     code->push(rbx);
     code->push(rcx);
     code->push(rdx);
     code->push(rdi);
     code->push(rsi);
-    code->push(rbp);
-    code->push(rsp);
+    //code->push(rbp);
+    //code->push(rsp);
     code->push(r8);
     code->push(r9);
     code->push(r10);
@@ -139,14 +141,15 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->pop(r10);
     code->pop(r9);
     code->pop(r8);
-    code->pop(rsp);
-    code->pop(rbp);
+    //code->pop(rsp);
+    //code->pop(rbp);
     code->pop(rsi);
     code->pop(rdi);
     code->pop(rdx);
     code->pop(rcx);
     code->pop(rbx);
     code->pop(rax);
+    code->leave();
     code->ret();
     return code;
 
