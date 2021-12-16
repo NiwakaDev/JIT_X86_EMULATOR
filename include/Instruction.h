@@ -12,7 +12,7 @@ class Instruction:public Object{
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg32 dest_reg, const Xbyak::Reg64 mem);
-
+        Xbyak::Reg32 GetReg32ForRegIdx();
     public:
         std::string code_name;
         Instruction(std::string name);
@@ -131,5 +131,11 @@ class PopR32:public Instruction{
 class AddRm32Imm8:public Instruction{
     public:
         AddRm32Imm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class CmpR32Rm32:public Instruction{
+    public:
+        CmpR32Rm32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };

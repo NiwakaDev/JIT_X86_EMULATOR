@@ -9,6 +9,7 @@ Jit::Jit(){
         this->instructions[i] = NULL;
     }
     this->instructions[0x01] = new AddRm32R32("AddRm32R32");
+    this->instructions[0x3B] = new CmpR32Rm32("CmpR32Rm32");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0x50+i] = new PushR32("PushR32");
     }

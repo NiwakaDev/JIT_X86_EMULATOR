@@ -30,6 +30,26 @@ inline void Instruction::ParseModRM(Jit* jit){
     }
 }
 
+Xbyak::Reg32 Instruction::GetReg32ForRegIdx(){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    Reg32 r32;       
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            return jit_eax;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::GetReg32ForRegIdx", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
+    }
+}
+
 //mem       : jitのメモリ領域
 //data      : pushされるデータ
 void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data){
@@ -844,6 +864,73 @@ void AddRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
             default:
                 this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
         }
+    }
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
+    return;
+}
+
+CmpR32Rm32::CmpR32Rm32(string name):Instruction(name){
+
+}
+
+void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg32 effective_addr(ebx);     
+    const Reg64 mem(rdx);
+    Reg32 r32;
+
+    jit->eip++;
+    this->ParseModRM(jit);
+    uint32_t rm32;
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+
+    code->mov(mem, (size_t)jit->mem);
+    r32 = this->GetReg32ForRegIdx();
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        switch ((REGISTER_KIND)this->modrm.rm){
+            case EBP:
+                code->mov(effective_addr, disp8);
+                code->add(effective_addr, jit_ebp);
+                break;
+            default:
+                this->Error("Not implemented: register_type=%d at %s::CompileStep\n", this->modrm.rm, this->code_name.c_str());
+                break;
+        }
+        //jit->mem[effective_addr]++したい。
+        code->add(mem, effective_addr);
+        code->cmp(dword [mem], r32);
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
+    }else if(this->modrm.mod==3){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
     }
     //TODO:
     //余計なフラグ情報まで更新している。
