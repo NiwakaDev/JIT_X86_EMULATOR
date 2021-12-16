@@ -40,7 +40,7 @@ void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg6
     code->mov(mem, (size_t)jit->mem);
     code->sub(jit_esp, 4);
     code->add(mem, jit_esp);
-    code->mov(mem, data);
+    code->mov(dword [mem], data);
 }
 
 //mem       : jitのメモリ領域
@@ -53,7 +53,7 @@ void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg6
     code->mov(mem, (size_t)jit->mem);
     code->sub(jit_esp, 4);
     code->add(mem, jit_esp);
-    code->mov(mem, reg);
+    code->mov(dword [mem], reg);
 }
 
 //dest_addr : 保存先アドレス
