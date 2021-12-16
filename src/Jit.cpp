@@ -15,6 +15,7 @@ Jit::Jit(){
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0xB8+i] = new MovR32Imm32("MovR32Imm32");
     }
+    this->instructions[0xC3] = new Ret32Near("Ret32Near");
     this->instructions[0xC7] = new MovRm32Imm32("MovRm32Imm32");
     this->instructions[0xE8] = new CallRel32("CallRel32");
     this->instructions[0xE9] = new JmpRel32("JmpRel32");
@@ -65,6 +66,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 
 	code->mov(jit_eax, this->save_registers_[EAX]);
     code->mov(jit_ebx, this->save_registers_[EBX]);
+    code->mov(jit_ecx, this->save_registers_[ECX]);
 	code->mov(jit_esp, this->save_registers_[ESP]);
     code->mov(jit_ebp, this->save_registers_[EBP]);
     code->mov(jit_esi, this->save_registers_[ESI]);
@@ -82,6 +84,9 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     //eaxを保存
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(dword [save_registers], jit_eax);
+    //ecxを保存
+    code->mov(rcx, 1);
+    code->mov(dword [save_registers+rcx*4], jit_ecx);
     //ebxを保存
     code->mov(rcx, 3);
     code->mov(dword [save_registers+rcx*4], jit_ebx);

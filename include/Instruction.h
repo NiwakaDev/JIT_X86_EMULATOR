@@ -92,3 +92,9 @@ class CallRel32:public Instruction{
         CallRel32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class Ret32Near:public Instruction{
+    public:
+        Ret32Near(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

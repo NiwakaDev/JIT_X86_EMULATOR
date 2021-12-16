@@ -197,11 +197,14 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     uint32_t disp32;
     
     switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            code->mov(r32, jit_eax);
+            break;
         case ESP:
             code->mov(r32, jit_esp);
             break;
         default:
-            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::CompileStep", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
     }
     //TODO:
     //アドレッシングモードは関数化すべき。
@@ -218,6 +221,9 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
+            case ECX:
+                code->mov(jit_ecx, r32);
+                break;
             case EBP:
                 code->mov(jit_ebp, r32);
                 break;
@@ -326,8 +332,11 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         case EAX:
             code->mov(r32, jit_eax);
             break;
+        case EBX:
+            code->mov(r32, jit_ebx);
+            break;
         default:
-            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::Run", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
     }
     //TODO:
     //アドレッシングモードは関数化すべき。
@@ -352,21 +361,18 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         }
         //jit->mem[effective_addr]++したい。
         code->add(mem, effective_addr);
-        switch((REGISTER_KIND)this->modrm.reg_index){
-            case EAX:
-                code->add(dword [mem], jit_eax);
-                break;
-            default:
-                this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d", (REGISTER_KIND)this->modrm.reg_index);
-        }
+        code->add(dword [mem], r32);
         return;
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
+            case ECX:
+                code->add(jit_ecx, r32);
+                break;
             default:
-                this->Error("Not implemented: register_kind=%d at %s::Run\n", register_kind, this->code_name.c_str());
+                this->Error("Not implemented: register_kind=%d at %s::CompileStep\n", register_kind, this->code_name.c_str());
         }
         return;
     }
@@ -584,8 +590,46 @@ void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     code->sub(jit_esp, 4);
     code->add(mem, jit_esp);
     code->mov(mem, jit->eip+4);
-    
+
     //ジャンプ
     jit->eip = jit->eip + rel32 + 4;
+    return;
+}
+
+Ret32Near::Ret32Near(string name):Instruction(name){
+
+}
+
+void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rdi);
+    const Reg32 data(esi);
+
+    *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
+    jit->eip++;
+    code->mov(mem, (size_t)jit->mem);
+    code->mov(jit_eip, (size_t)&jit->eip);
+    //Ret32Nearの手順
+    //1 : 4バイトをESPからPOP
+    //2 : EIPにそれをセットする
+
+    //POPの手順
+    //まずはデータをESPから取り出す。
+    //ESPに4を足す。
+    code->add(mem, jit_esp);
+    code->mov(esi, dword [mem]);
+    code->mov(dword [jit_eip], esi);  
+    code->add(jit_esp, 4);
     return;
 }
