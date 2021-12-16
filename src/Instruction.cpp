@@ -602,7 +602,7 @@ Ret32Near::Ret32Near(string name):Instruction(name){
 
 //dest_addr : 保存先アドレス
 //mem       : jitのメモリ領域
-void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
+void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
     using namespace Xbyak::util;
 	using namespace Xbyak;
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
@@ -635,6 +635,6 @@ void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     code->mov(mem, (size_t)jit->mem);
     code->mov(jit_eip, (size_t)&jit->eip);
 
-    Pop32(code, jit, dword [jit_eip], mem);
+    this->Pop32(code, jit, dword [jit_eip], mem);
     return;
 }
