@@ -2,14 +2,14 @@
 #include "Jit.h"
 
 using namespace std;
+using namespace Xbyak::util;
+using namespace Xbyak;
 
 Instruction::Instruction(string name){
     this->code_name = name;
 }
 
-inline void Instruction::ParseModRM(Jit* jit, Xbyak::CodeGenerator* code){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+inline void Instruction::ParseModRM(Jit* jit, CodeGenerator* code){
     uint8_t op_code;
     op_code = jit->mem[jit->eip];
     this->modrm.mod = ((op_code&0xC0)>>6);
@@ -51,9 +51,7 @@ inline void Instruction::ParseModRM(Jit* jit, Xbyak::CodeGenerator* code){
     }
 }
 
-Xbyak::Reg32 Instruction::GetReg32ForRegIdx(){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+Reg32 Instruction::GetReg32ForRegIdx(){
     const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
     const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
     const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -66,6 +64,20 @@ Xbyak::Reg32 Instruction::GetReg32ForRegIdx(){
     switch((REGISTER_KIND)this->modrm.reg_index){
         case EAX:
             return jit_eax;
+        case EBX:
+            return jit_ebx;
+        case ECX:
+            return jit_ecx;
+        case EDX:
+            return jit_edx;
+        case EDI:
+            return jit_edi;
+        case ESI:
+            return jit_esi;
+        case EBP:
+            return jit_ebp;
+        case ESP:
+            return jit_esp;
         default:
             this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::GetReg32ForRegIdx", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
     }
@@ -73,9 +85,7 @@ Xbyak::Reg32 Instruction::GetReg32ForRegIdx(){
 
 //mem       : jitのメモリ領域
 //data      : pushされるデータ
-void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, uint32_t data){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
 
     code->mov(mem, (size_t)jit->mem);
@@ -86,9 +96,7 @@ void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg6
 
 //mem       : jitのメモリ領域
 //reg       : pushされるレジスタ
-void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, const Reg32 reg){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
 
     code->mov(mem, (size_t)jit->mem);
@@ -99,9 +107,7 @@ void Instruction::Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg6
 
 //dest_addr : 保存先アドレス
 //mem       : jitのメモリ領域
-void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Instruction::Pop32(CodeGenerator* code, Jit* jit, const Address dest_addr, const Reg64 mem){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 data(esi);
 
@@ -111,9 +117,7 @@ void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Addre
     code->add(jit_esp, 4);
 }
 
-void Instruction::Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg32 dest_reg, const Xbyak::Reg64 mem){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Instruction::Pop32(CodeGenerator* code, Jit* jit, const Reg32 dest_reg, const Reg64 mem){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 data(esi);
 
@@ -126,9 +130,7 @@ MovR32Imm32::MovR32Imm32(string name):Instruction(name){
 
 }
 
-void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -138,6 +140,7 @@ void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
+    Reg32 r32;
     uint8_t register_type = jit->mem[jit->eip]-0xB8;
     #ifdef DEBUG
         code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
@@ -154,16 +157,8 @@ void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     #else 
         jit->eip += 4;
     #endif
-    switch(register_type){
-        case EAX:
-            code->mov(jit_eax, imm32);
-            break;
-        case EBX:
-            code->mov(jit_ebx, imm32);
-            break;
-        default:
-            this->Error("Not implemented: register_type=%d at %s::CompileStep\n", register_type, this->code_name.c_str());
-    }
+    r32 = this->GetReg32ForRegIdx();   
+    code->mov(r32, imm32);
     return;
 }
 
@@ -171,9 +166,7 @@ JmpRel8::JmpRel8(string name):Instruction(name){
 
 }
 
-void JmpRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void JmpRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -210,9 +203,7 @@ Code83::Code83(string name):Instruction(name){
     this->instructions[5] = new SubRm32Imm8("SubRm32Imm8");
 }
 
-void Code83::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Code83::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -242,9 +233,7 @@ SubRm32Imm8::SubRm32Imm8(string name):Instruction(name){
 
 }
 
-void SubRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void SubRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -305,9 +294,7 @@ MovRm32R32::MovRm32R32(string name):Instruction(name){
 
 }
 
-void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void MovRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -376,9 +363,7 @@ MovRm32Imm32::MovRm32Imm32(string name):Instruction(name){
 
 }
 
-void MovRm32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void MovRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -457,9 +442,7 @@ AddRm32R32::AddRm32R32(string name):Instruction(name){
 
 }
 
-void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void AddRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -552,9 +535,7 @@ MovR32Rm32::MovR32Rm32(string name):Instruction(name){
 
 }
 
-void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void MovR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -636,9 +617,7 @@ CodeFF::CodeFF(string code_name):Instruction(code_name){
     this->instructions[0] = new IncRm32("IncRm32");
 }
 
-void CodeFF::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void CodeFF::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     #ifdef DEBUG
         code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
@@ -660,9 +639,7 @@ IncRm32::IncRm32(string name):Instruction(name){
 
 }
 
-void IncRm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void IncRm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -727,9 +704,7 @@ JmpRel32::JmpRel32(string name):Instruction(name){
 
 }
 
-void JmpRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void JmpRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -763,9 +738,7 @@ CallRel32::CallRel32(string name):Instruction(name){
 
 }
 
-void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void CallRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -805,9 +778,7 @@ Ret32Near::Ret32Near(string name):Instruction(name){
 
 }
 
-void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Ret32Near::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -840,9 +811,7 @@ PushR32::PushR32(string name):Instruction(name){
 
 }
 
-void PushR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void PushR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -878,9 +847,7 @@ Leave::Leave(string name):Instruction(name){
 
 }
 
-void Leave::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Leave::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -913,9 +880,7 @@ PushImm8::PushImm8(string name):Instruction(name){
 
 }
 
-void PushImm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void PushImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -953,9 +918,7 @@ PopR32::PopR32(string name):Instruction(name){
 
 }
 
-void PopR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void PopR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -993,9 +956,7 @@ AddRm32Imm8::AddRm32Imm8(string name):Instruction(name){
 
 }
 
-void AddRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void AddRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -1057,9 +1018,7 @@ CmpR32Rm32::CmpR32Rm32(string name):Instruction(name){
 
 }
 
-void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void CmpR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
@@ -1131,9 +1090,7 @@ JleRel8::JleRel8(string name):Instruction(name){
 
 }
 
-void JleRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void JleRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
 	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
@@ -1179,9 +1136,7 @@ Nop::Nop(string name):Instruction(name){
 
 }
 
-void Nop::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    using namespace Xbyak::util;
-	using namespace Xbyak;
+void Nop::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
