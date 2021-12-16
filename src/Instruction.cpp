@@ -386,6 +386,9 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         case EBX:
             code->mov(r32, jit_ebx);
             break;
+        case EDX:
+            code->mov(r32, jit_edx);
+            break;
         default:
             this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::Run", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
     }
@@ -419,6 +422,9 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     }else if(this->modrm.mod==3){
         REGISTER_KIND register_kind = (REGISTER_KIND)this->modrm.rm;
         switch(register_kind){
+            case EAX:
+                code->add(jit_eax, r32);
+                break;
             case ECX:
                 code->add(jit_ecx, r32);
                 break;
@@ -489,6 +495,9 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         switch((REGISTER_KIND)this->modrm.reg_index){
             case EAX:
                 code->mov(jit_eax, dword [mem]);
+                break;
+            case EDX:
+                code->mov(jit_edx, dword [mem]);
                 break;
             case ESI:
                 code->mov(jit_esi, dword [mem]);
@@ -748,12 +757,42 @@ void PushImm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 effective_addr(ebx); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     code->mov(mem, (size_t)jit->mem);
-    //Leave命令
-    //ESPにEBPを格納する
-    //スタックからPOPし、EBPに格納する
+
     jit->eip++;
     uint32_t imm32 = (int32_t)(int8_t)jit->mem[jit->eip];
     jit->eip++;
     this->Push32(code, jit, mem, imm32);
+    return;
+}
+
+PopR32::PopR32(string name):Instruction(name){
+
+}
+
+void PopR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg64 mem(rdx);//jit->mem
+    code->mov(mem, (size_t)jit->mem);
+
+    REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x58);
+    jit->eip++;
+
+    switch(register_type){
+        case EBP:
+            this->Pop32(code, jit, jit_ebp, mem);
+            break;
+        default:
+            this->Error("Not implemented: register_type=%d\n", register_type);
+    }
     return;
 }

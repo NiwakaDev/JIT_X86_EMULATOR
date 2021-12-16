@@ -121,3 +121,9 @@ class PushImm8:public Instruction{
         PushImm8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class PopR32:public Instruction{
+    public:
+        PopR32(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
