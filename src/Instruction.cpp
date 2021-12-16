@@ -7,13 +7,22 @@ Instruction::Instruction(string name){
     this->code_name = name;
 }
 
-inline void Instruction::ParseModRM(Jit* jit){
-    uint8_t code;
-    code = jit->mem[jit->eip];
-    this->modrm.mod = ((code&0xC0)>>6);
-    this->modrm.op_code = ((code&0x38) >> 3);
-    this->modrm.rm = code & 0x07;
-    jit->eip++;
+inline void Instruction::ParseModRM(Jit* jit, Xbyak::CodeGenerator* code){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+    uint8_t op_code;
+    op_code = jit->mem[jit->eip];
+    this->modrm.mod = ((op_code&0xC0)>>6);
+    this->modrm.op_code = ((op_code&0x38) >> 3);
+    this->modrm.rm = op_code & 0x07;
+    const Reg64 jit_eip(rbx);//jit_eipとして扱う。
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip++;
+    #else 
+        jit->eip++;
+    #endif
     //SIB判定
     if(this->modrm.mod!=3 && this->modrm.rm==4){
         this->Error("Not implemented: modrm.mod=0x%02X, modrm.rm=0x%02X", this->modrm.mod, this->modrm.rm);
@@ -22,11 +31,23 @@ inline void Instruction::ParseModRM(Jit* jit){
     if((this->modrm.mod==0 && this->modrm.rm==5) || this->modrm.mod==2){
         //this->modrm.disp32 = emu->mem->Read32(jit->GetLinearAddrForCodeAccess());
         this->modrm.disp32 = *(uint32_t*)(jit->mem+jit->eip);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 4;
+    #else 
+        jit->eip += 4;
+    #endif
     }else if(this->modrm.mod==1){
         //this->modrm.disp8 = emu->mem->Read8(jit->GetLinearAddrForCodeAccess());
         this->modrm.disp8 = jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     }
 }
 
@@ -116,10 +137,23 @@ void MovR32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     uint8_t register_type = jit->mem[jit->eip]-0xB8;
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t imm32 = jit->mem[jit->eip];
-    jit->eip += 4;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 4;
+    #else 
+        jit->eip += 4;
+    #endif
     switch(register_type){
         case EAX:
             code->mov(jit_eax, imm32);
@@ -148,11 +182,23 @@ void JmpRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-
+    const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
-    jit->eip = jit->eip+1+rel8;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->mov(dword [jit_eip], jit->eip+1+rel8);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip = jit->eip+1+rel8;
+    #else 
+        jit->eip = jit->eip+1+rel8;
+    #endif
     return;
 }
 
@@ -175,9 +221,15 @@ void Code83::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-
-    jit->eip++;
-    this->ParseModRM(jit);
+    const Reg64 jit_eip(rbx);//jit_eipとして扱う。
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);
+        code->add(dword [jit_eip], 1);
+        jit->eip++;
+    #else
+        jit->eip++;
+    #endif
+    this->ParseModRM(jit, code);
     if(this->instructions[this->modrm.reg_index]==NULL){
             this->Error("code 83 /%02X is not implemented %s::Run", this->modrm.reg_index, this->code_name.c_str());
     }
@@ -202,8 +254,15 @@ void SubRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
+    const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t rm32;
     uint32_t addr;
     uint32_t disp8;
@@ -259,9 +318,16 @@ void MovRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
-    jit->eip++;
-    this->ParseModRM(jit);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
 
     uint32_t rm32;
     uint32_t addr;
@@ -323,13 +389,26 @@ void MovRm32Imm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit)
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
-    const Reg32 effective_addr(ebx);     
+    const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
-    jit->eip++;
-    this->ParseModRM(jit);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
     uint32_t imm32 = jit->Read32(jit->eip);
-    jit->eip += 4;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 4;
+    #else 
+        jit->eip += 4;
+    #endif
 
     uint32_t addr;
     uint32_t disp8;
@@ -391,11 +470,18 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
-    const Reg32 effective_addr(ebx);     
+    const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
-    jit->eip++;
-    this->ParseModRM(jit);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
     code->mov(mem, (size_t)jit->mem);
     uint32_t addr;
     uint32_t disp8;
@@ -437,7 +523,6 @@ void AddRm32R32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         //jit->mem[effective_addr]++したい。
         code->add(mem, effective_addr);
         code->add(dword [mem], r32);
-        return;
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::GetRM32", this->modrm.mod, this->code_name.c_str());
     }else if(this->modrm.mod==3){
@@ -479,11 +564,18 @@ void MovR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    const Reg32 effective_addr(ebx);     
+    const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
-    jit->eip++;
-    this->ParseModRM(jit);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
 
     uint32_t addr;
     uint32_t disp8;
@@ -545,8 +637,17 @@ CodeFF::CodeFF(string code_name):Instruction(code_name){
 }
 
 void CodeFF::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
-    jit->eip++;
-    this->ParseModRM(jit);
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
     if(this->instructions[this->modrm.reg_index]==NULL){
             this->Error("Not implemented: FF /%02X at %s::Run", this->modrm.reg_index, this->code_name.c_str());
     }
@@ -572,8 +673,9 @@ void IncRm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 rm32(rcx);       
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     uint32_t addr;
     uint32_t disp8;
@@ -636,11 +738,24 @@ void JmpRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t rel32 = jit->Read32(jit->eip);
-    jit->eip = jit->eip + rel32 + 4;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->mov(dword [jit_eip], jit->eip + rel32 + 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip = jit->eip + rel32 + 4;
+    #else 
+        jit->eip = jit->eip + rel32 + 4;
+    #endif
     return;
 }
 
@@ -659,17 +774,30 @@ void CallRel32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t rel32 = jit->Read32(jit->eip);
 
     this->Push32(code, jit, mem, jit->eip+4);
 
     //ジャンプ
-    jit->eip = jit->eip + rel32 + 4;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->mov(dword [jit_eip], jit->eip + rel32 + 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip = jit->eip + rel32 + 4;
+    #else 
+        jit->eip = jit->eip + rel32 + 4;
+    #endif
     return;
 }
 
@@ -688,13 +816,19 @@ void Ret32Near::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rdi);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     const Reg32 data(esi);
 
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     code->mov(mem, (size_t)jit->mem);
     code->mov(jit_eip, (size_t)&jit->eip);
 
@@ -717,12 +851,19 @@ void PushR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     code->mov(mem, (size_t)jit->mem);
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x50);
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     switch(register_type){
         case EBP:
             this->Push32(code, jit, mem, jit_ebp);
@@ -748,13 +889,21 @@ void Leave::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
     code->mov(mem, (size_t)jit->mem);
     //Leave命令
     //ESPにEBPを格納する
     //スタックからPOPし、EBPに格納する
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     code->mov(jit_esp, jit_ebp);
     this->Pop32(code, jit, jit_ebp, mem);
     return;
@@ -775,13 +924,27 @@ void PushImm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
     code->mov(mem, (size_t)jit->mem);
 
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t imm32 = (int32_t)(int8_t)jit->mem[jit->eip];
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     this->Push32(code, jit, mem, imm32);
     return;
 }
@@ -801,12 +964,20 @@ void PopR32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 effective_addr(ebx); // effective_addr
+    const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
     code->mov(mem, (size_t)jit->mem);
 
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x58);
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
 
     switch(register_type){
         case EBP:
@@ -834,8 +1005,16 @@ void AddRm32Imm8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
-    jit->eip++;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
     uint32_t rm32;
     uint32_t addr;
     uint32_t disp8;
@@ -890,19 +1069,33 @@ void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    const Reg32 effective_addr(ebx);     
+    const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     Reg32 r32;
 
-    jit->eip++;
-    this->ParseModRM(jit);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
     uint32_t rm32;
     uint32_t addr;
     uint32_t disp8;
     uint32_t disp32;
 
     code->mov(mem, (size_t)jit->mem);
-    r32 = this->GetReg32ForRegIdx();
+    //r32 = this->GetReg32ForRegIdx();   
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            r32 = jit_eax;
+            break;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::GetReg32ForRegIdx", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
+    }
     //TODO:
     //アドレッシングモードは関数化すべき。
     if(this->modrm.mod!=3 && this->modrm.rm==4){
@@ -926,7 +1119,7 @@ void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
         }
         //jit->mem[effective_addr]++したい。
         code->add(mem, effective_addr);
-        code->cmp(dword [mem], r32);
+        code->cmp(r32, dword [mem]);
     }else if(this->modrm.mod==2){
         this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
     }else if(this->modrm.mod==3){
@@ -938,5 +1131,53 @@ void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     //フラグ更新処理
     code->pushfq();
     code->pop(jit_eflags);
+    return;
+}
+
+JleRel8::JleRel8(string name):Instruction(name){
+
+}
+
+void JleRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
+    *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+
+    code->push(jit_eflags);
+    code->popfq();
+    code->jle("L1");
+    code->jmp("L2");
+    code->L("L1");
+    //code->mov(jit_eip, (size_t)&jit->eip);
+    //code->add(dwor [jit_eip], code_size);
+    code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+    code->add(dword [jit_eip], rel8);
+    code->L("L2");
     return;
 }

@@ -7,7 +7,7 @@ class Jit;
 class Instruction:public Object{
     protected:
         ModRM modrm;
-        void ParseModRM(Jit* jit);
+        void ParseModRM(Jit* jit, Xbyak::CodeGenerator* code);
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, uint32_t data);
         void Push32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg64 mem, const Xbyak::Reg32 reg);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
@@ -137,5 +137,11 @@ class AddRm32Imm8:public Instruction{
 class CmpR32Rm32:public Instruction{
     public:
         CmpR32Rm32(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class JleRel8:public Instruction{
+    public:
+        JleRel8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };

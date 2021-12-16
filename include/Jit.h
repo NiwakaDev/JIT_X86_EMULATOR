@@ -47,9 +47,10 @@ class Jit:public Object{
         uint32_t Read32(uint32_t addr);
         void ShowRegisters();
         void Debug(FILE *f) {
-            fprintf(f, " EAX   EBX   ECX   EDX   ESP   EBP   ESI   EDI   EIP\n");
+            fprintf(f, " EAX   EBX   ECX   EDX   ESP   EBP   ESI   EDI   EIP   ZF   OF   SF\n");
             fprintf(f,
-                "%08x %08x %08x %08x %08x %04x %04x %04x %04x\n",
-                this->save_registers_[EAX], this->save_registers_[EBX], this->save_registers_[ECX], this->save_registers_[EDX], this->save_registers_[ESP], this->save_registers_[EBP], this->save_registers_[ESI], this->save_registers_[EDI], this->eip);
+                "%08x %08x %08x %08x %08x %04x %04x %04x %04x %c %c %c\n",
+                this->save_registers_[EAX], this->save_registers_[EBX], this->save_registers_[ECX], this->save_registers_[EDX], this->save_registers_[ESP], this->save_registers_[EBP], this->save_registers_[ESI], this->save_registers_[EDI], this->eip,
+                this->eflags.flgs.ZF? '1':'0', this->eflags.flgs.OF? '1':'0', this->eflags.flgs.SF? '1':'0');
         }
 };

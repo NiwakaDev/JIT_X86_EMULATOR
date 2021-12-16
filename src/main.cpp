@@ -30,11 +30,18 @@ int main(int argc, char** argv){
     //jit->ShowRegisters();
     int idx=0;
     while(jit->eip<MEM_SIZE){
+        if(idx==18){
+            idx = idx;
+        }
         #ifdef DEBUG
             fprintf(out, "i:%d\n", idx);
             jit->Debug(out);
             jit->Run();
             jit->Debug(out);
+            if(idx==80){
+                fclose(out);
+               exit(1);
+            }
             idx++;
         #else
             jit->Run();

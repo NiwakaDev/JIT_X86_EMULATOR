@@ -17,6 +17,7 @@ Jit::Jit(){
         this->instructions[0x58+i] = new PopR32("PopR32");
     }
     this->instructions[0x6A] = new PushImm8("PushImm8");
+    this->instructions[0x7E] = new JleRel8("JleRel8");
     this->instructions[0x83] = new Code83("Code83");
     this->instructions[0x89] = new MovRm32R32("MovRm32R32");
     this->instructions[0x8B] = new MovR32Rm32("MovR32Rm32");
@@ -85,16 +86,19 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->push(r14);
     code->push(r15);
 
-	code->mov(jit_eax, this->save_registers_[EAX]);
-    code->mov(jit_ebx, this->save_registers_[EBX]);
-    code->mov(jit_ecx, this->save_registers_[ECX]);
-    code->mov(jit_edx, this->save_registers_[EDX]);
-	code->mov(jit_esp, this->save_registers_[ESP]);
-    code->mov(jit_ebp, this->save_registers_[EBP]);
-    code->mov(jit_esi, this->save_registers_[ESI]);
-    code->mov(jit_edi, this->save_registers_[EDI]);
+    code->mov(save_registers, (size_t)&this->save_registers_);
+    code->mov(jit_eax, dword [save_registers]);    //eaxをjit_eaxに割り当て
+    code->mov(jit_ecx, dword [save_registers+1*4]);//ecxをjit_eaxに割り当て
+    code->mov(jit_edx, dword [save_registers+2*4]);//edxをjit_eaxに割り当て
+    code->mov(jit_ebx, dword [save_registers+3*4]);//ebxをjit_eaxに割り当て
+    code->mov(jit_esp, dword [save_registers+4*4]);//espをjit_eaxに割り当て
+    code->mov(jit_ebp, dword [save_registers+5*4]);//ebpをjit_eaxに割り当て
+    code->mov(jit_esi, dword [save_registers+6*4]);//esiをjit_eaxに割り当て
+    code->mov(jit_edi, dword [save_registers+7*4]);//ediをjit_eaxに割り当て
 
-    code->mov(jit_eflags, this->eflags.raw);
+    //eflagsを保存
+    code->mov(save_registers, (size_t)&this->eflags.raw);
+    code->mov(jit_eflags, dword [save_registers]);
     while(!stop){
         uint8_t op_code = this->mem[this->eip];
         if(this->instructions[op_code]==NULL){
@@ -152,14 +156,27 @@ bool Jit::IsCompiledBlock(uint32_t eip){
     return this->eip2code[eip]!=NULL;
 }
 
+void ToBinary(Xbyak::CodeGenerator* code){
+    FILE* binary = fopen("binary.bin", "wb");
+    fwrite(code->getCode(), 1, code->getSize(), binary);
+    fclose(binary);
+}
+
 void Jit::Run(){
     Xbyak::CodeGenerator* code;
     if(this->IsCompiledBlock(this->eip)){
         code = this->eip2code[this->eip];
     }else{
         uint32_t first_eip = this->eip;
+        if(first_eip==0x7c25){
+            first_eip = first_eip;
+        }
         code = this->CompileBlock();
+        if(first_eip==0x7c25){
+            ToBinary(code);
+        }
         this->eip2code[first_eip] = code;
+        this->eip = first_eip;
     }
     fprintf(stderr, "before:\n");
     this->ShowRegisters();
