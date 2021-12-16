@@ -127,3 +127,9 @@ class PopR32:public Instruction{
         PopR32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class AddRm32Imm8:public Instruction{
+    public:
+        AddRm32Imm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
