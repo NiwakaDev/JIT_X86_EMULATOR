@@ -38,10 +38,6 @@ int main(int argc, char** argv){
             jit->Debug(out);
             jit->Run();
             jit->Debug(out);
-            if(idx==80){
-                fclose(out);
-               exit(1);
-            }
             idx++;
         #else
             jit->Run();

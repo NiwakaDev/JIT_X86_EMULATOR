@@ -1088,14 +1088,7 @@ void CmpR32Rm32::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     uint32_t disp32;
 
     code->mov(mem, (size_t)jit->mem);
-    //r32 = this->GetReg32ForRegIdx();   
-    switch((REGISTER_KIND)this->modrm.reg_index){
-        case EAX:
-            r32 = jit_eax;
-            break;
-        default:
-            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::GetReg32ForRegIdx", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
-    }
+    r32 = this->GetReg32ForRegIdx();   
     //TODO:
     //アドレッシングモードは関数化すべき。
     if(this->modrm.mod!=3 && this->modrm.rm==4){
@@ -1179,5 +1172,25 @@ void JleRel8::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
     code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
     code->add(dword [jit_eip], rel8);
     code->L("L2");
+    return;
+}
+
+Nop::Nop(string name):Instruction(name){
+
+}
+
+void Nop::CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit){
+    using namespace Xbyak::util;
+	using namespace Xbyak;
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    code->nop();
     return;
 }

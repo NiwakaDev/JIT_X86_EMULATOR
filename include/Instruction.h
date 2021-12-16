@@ -145,3 +145,9 @@ class JleRel8:public Instruction{
         JleRel8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class Nop:public Instruction{
+    public:
+        Nop(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
