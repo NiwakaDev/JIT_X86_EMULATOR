@@ -195,3 +195,9 @@ class IncR32:public Instruction{
         IncR32(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class IntImm8:public Instruction{
+    public:
+        IntImm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

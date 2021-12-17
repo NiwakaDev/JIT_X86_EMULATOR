@@ -141,7 +141,7 @@ Reg32 Instruction::GetReg32(REGISTER_KIND register_kind){
 //mem       : jitのメモリ領域
 //data      : pushされるデータ
 void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, uint32_t data){
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
 
     code->mov(mem, (size_t)jit->mem);
     code->sub(jit_esp, 4);
@@ -152,7 +152,7 @@ void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, uint32_
 //mem       : jitのメモリ領域
 //reg       : pushされるレジスタ
 void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, const Reg32 reg){
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
 
     code->mov(mem, (size_t)jit->mem);
     code->sub(jit_esp, 4);
@@ -163,7 +163,7 @@ void Instruction::Push32(CodeGenerator* code, Jit* jit, const Reg64 mem, const R
 //dest_addr : 保存先アドレス
 //mem       : jitのメモリ領域
 void Instruction::Pop32(CodeGenerator* code, Jit* jit, const Address dest_addr, const Reg64 mem){
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 data(esi);
 
     code->add(mem, jit_esp);
@@ -173,7 +173,7 @@ void Instruction::Pop32(CodeGenerator* code, Jit* jit, const Address dest_addr, 
 }
 
 void Instruction::Pop32(CodeGenerator* code, Jit* jit, const Reg32 dest_reg, const Reg64 mem){
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 data(esi);
 
     code->add(mem, jit_esp);
@@ -186,14 +186,14 @@ MovR32Imm32::MovR32Imm32(string name):Instruction(name){
 }
 
 void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     Reg32 r32;
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0xB8);
@@ -220,14 +220,14 @@ JmpRel8::JmpRel8(string name):Instruction(name){
 }
 
 void JmpRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
@@ -284,14 +284,14 @@ SubRm32Imm8::SubRm32Imm8(string name):Instruction(name){
 }
 
 void SubRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
@@ -344,14 +344,14 @@ MovRm32R32::MovRm32R32(string name):Instruction(name){
 }
 
 void MovRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -412,14 +412,14 @@ MovRm32Imm32::MovRm32Imm32(string name):Instruction(name){
 }
 
 void MovRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
     const Reg32 effective_addr(edi);     
@@ -489,14 +489,14 @@ AddRm32R32::AddRm32R32(string name):Instruction(name){
 }
 
 void AddRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
     const Reg32 effective_addr(edi);     
@@ -581,14 +581,14 @@ MovR32Rm32::MovR32Rm32(string name):Instruction(name){
 }
 
 void MovR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
@@ -683,14 +683,14 @@ IncRm32::IncRm32(string name):Instruction(name){
 }
 
 void IncRm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 rm32(rcx);       
     const Reg32 effective_addr(edi); // effective_addr
@@ -748,14 +748,14 @@ JmpRel32::JmpRel32(string name):Instruction(name){
 }
 
 void JmpRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
@@ -780,14 +780,14 @@ CallRel32::CallRel32(string name):Instruction(name){
 }
 
 void CallRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -818,14 +818,14 @@ Ret32Near::Ret32Near(string name):Instruction(name){
 }
 
 void Ret32Near::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -850,14 +850,14 @@ PushR32::PushR32(string name):Instruction(name){
 }
 
 void PushR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -885,14 +885,14 @@ Leave::Leave(string name):Instruction(name){
 }
 
 void Leave::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -917,14 +917,14 @@ PushImm8::PushImm8(string name):Instruction(name){
 }
 
 void PushImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -953,14 +953,14 @@ PopR32::PopR32(string name):Instruction(name){
 }
 
 void PopR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
@@ -990,14 +990,14 @@ AddRm32Imm8::AddRm32Imm8(string name):Instruction(name){
 }
 
 void AddRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
@@ -1051,14 +1051,14 @@ CmpR32Rm32::CmpR32Rm32(string name):Instruction(name){
 }
 
 void CmpR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
@@ -1122,14 +1122,14 @@ JleRel8::JleRel8(string name):Instruction(name){
 }
 
 void JleRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
@@ -1285,11 +1285,11 @@ MovR8Imm8::MovR8Imm8(string name):Instruction(name){
 //x64ではhigh byteをサポートしていない。
 //例：r8の8bit目から15bit目はない。
 void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
-	const Reg8 jit_bl(r9b); //r8bをjit_alとして扱う。
-	const Reg8 jit_cl(r10b); //r8bをjit_alとして扱う。
-	const Reg8 jit_dl(r11b); //r8bをjit_alとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
+    const Reg8 jit_bl(r9b); //r8bをjit_alとして扱う。
+    const Reg8 jit_cl(r10b); //r8bをjit_alとして扱う。
+    const Reg8 jit_dl(r11b); //r8bをjit_alとして扱う。
     const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
     uint8_t imm8;
     REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0xB0);
@@ -1336,7 +1336,7 @@ CmpAlImm8::CmpAlImm8(string name):Instruction(name){
 }
 
 void CmpAlImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
+    const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
     const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。64bitの理由はjit->eipの番地として扱うから。
     const Reg64 jit_eflags(rax);//eaxをeflagsとして扱う
     uint8_t imm8;
@@ -1368,14 +1368,14 @@ JzRel8::JzRel8(string name):Instruction(name){
 }
 
 void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
@@ -1413,14 +1413,14 @@ MovR8Rm8::MovR8Rm8(string name):Instruction(name){
 
 void MovR8Rm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg8  jit_al(r8b);  //r8bをjit_alとして扱う
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     const Reg32 effective_addr(edi);     
@@ -1486,14 +1486,14 @@ IncR32::IncR32(string name):Instruction(name){
 }
 
 void IncR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     Reg32 r32;
@@ -1519,5 +1519,33 @@ void IncR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     //フラグ更新処理
     code->pushfq();
     code->pop(jit_eflags);
+    return;
+}
+
+IntImm8::IntImm8(string name):Instruction(name){
+
+}
+
+void IntImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    Reg32 r32;
+
+    REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0x40);
+    #ifdef DEBUG
+        code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
     return;
 }

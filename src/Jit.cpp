@@ -37,6 +37,7 @@ Jit::Jit(){
     this->instructions[0xC3] = new Ret32Near("Ret32Near");
     this->instructions[0xC7] = new MovRm32Imm32("MovRm32Imm32");
     this->instructions[0xC9] = new Leave("Leave");
+    this->instructions[0xCD] = new IntImm8("IntImm8");
     this->instructions[0xE8] = new CallRel32("CallRel32");
     this->instructions[0xE9] = new JmpRel32("JmpRel32");
     this->instructions[0xEB] = new JmpRel8("JmpRel8");
@@ -69,14 +70,14 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     using namespace Xbyak::util;
 	using namespace Xbyak;
     Xbyak::CodeGenerator* code = new Xbyak::CodeGenerator();
-	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 jit_eflags(eax);//eaxをeflagsとして扱う
     const Reg64 jit_eip(rbx);//これは番地として扱うので、64bitレジスタ
     const Reg64 save_registers(rcx);//これは番地として扱うので、64bitレジスタ
