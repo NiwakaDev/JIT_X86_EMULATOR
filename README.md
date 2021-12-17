@@ -60,6 +60,33 @@ int main(void)
 
 ```
 
+
+4.2章の以下のコードが動きます。(subroutine32.bin)
+
+```
+BITS 32
+    org 0x7c00
+start:            ; プログラムの開始
+    mov esi, msg
+    call puts     ; サブルーチンを呼び出す
+    jmp 0
+
+puts:
+    mov al, [esi]  ; 1文字読み込む
+    inc esi
+    cmp al, 0     ; 文字列の末尾
+    je  puts_end  ; に来たら終了
+    mov ah, 0x0e
+    mov ebx, 15
+    int 0x10      ; BIOS を呼び出す
+    jmp puts
+puts_end:
+    ret           ; サブルーチンから抜ける
+
+msg:
+    db "hello, world", 0x0d, 0x0a, 0
+```
+
 <h2>目標</h2>
  <a href="https://www.amazon.co.jp/%E8%87%AA%E4%BD%9C%E3%82%A8%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%BF%E3%81%A7%E5%AD%A6%E3%81%B6x86%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3-%E3%82%B3%E3%83%B3%E3%83%94%E3%83%A5%E3%83%BC%E3%82%BF%E3%81%8C%E5%8B%95%E3%81%8F%E4%BB%95%E7%B5%84%E3%81%BF%E3%82%92%E5%BE%B9%E5%BA%95%E7%90%86%E8%A7%A3-%E5%86%85%E7%94%B0%E5%85%AC%E5%A4%AA/dp/4839954747/ref=sr_1_1?__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&keywords=%E8%87%AA%E4%BD%9C%E3%82%A8%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%BF&qid=1638354148&s=books&sr=1-1">自作エミュレータで学ぶx86アーキテクチャ-コンピュータが動く仕組みを徹底理解! 
  内田公太 、 上川大介</a>
