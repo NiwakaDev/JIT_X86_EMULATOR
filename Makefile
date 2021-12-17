@@ -4,7 +4,9 @@ EMULATOR = x86
 
 CC = clang++
 
-G++_OPTIONS = -std=c++11 -g -O0 -I $(INCLUDE_DIR) -DDEBUG
+#G++_OPTIONS = -std=c++11 -g -O0 -I $(INCLUDE_DIR) -DDEBUG
+G++_OPTIONS = -std=c++11 -g -O0 -I $(INCLUDE_DIR)
+
 
 SOURCE_DIR      = ./src/
 INCLUDE_DIR     = ./include/

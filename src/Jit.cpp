@@ -68,7 +68,7 @@ uint32_t Jit::Read32(uint32_t addr){
 
 Xbyak::CodeGenerator* Jit::CompileBlock(){
     using namespace Xbyak::util;
-	using namespace Xbyak;
+    using namespace Xbyak;
     Xbyak::CodeGenerator* code = new Xbyak::CodeGenerator();
     const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
     const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
@@ -128,6 +128,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
         this->instructions[op_code]->CompileStep(code, &stop, this);
         #ifdef DEBUG
             stop = true;//デバッグ時は1つの機械語命令でコンパイルを終了。
+        #else 
+            stop = true;//通常時でも同じく。理由はREADME.mdに書いてます。
         #endif
     }
 
@@ -189,9 +191,6 @@ void Jit::Run(){
     }else{
         uint32_t first_eip = this->eip;
         code = this->CompileBlock();
-        if(first_eip==0x7c09){
-            ToBinary(code);
-        }
         this->eip2code[first_eip] = code;
         this->eip = first_eip;
     }

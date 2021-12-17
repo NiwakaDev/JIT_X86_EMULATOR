@@ -2,8 +2,8 @@
 #include "Jit.h"
 
 int main(int argc, char** argv){
-    FILE* out = NULL;
     #ifdef DEBUG
+        FILE* out = NULL;
         out = fopen("niwaka_output.txt", "w");
         if(out==NULL){
             fprintf(stderr, "Error: fopen");
@@ -28,11 +28,8 @@ int main(int argc, char** argv){
     fread(jit->mem + 0x7c00, 1, 0x200, binary);
     //fprintf(stderr, "before:\n");
     //jit->ShowRegisters();
-    int idx=0;
+    int idx=1;
     while(jit->eip<MEM_SIZE){
-        if(idx==6){
-            idx = idx;
-        }
         #ifdef DEBUG
             fprintf(out, "i:%d\n", idx);
             jit->Debug(out);
