@@ -1309,3 +1309,57 @@ void OutDxAl::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->pop(rax);
     return;
 }
+
+MovR8Imm8::MovR8Imm8(string name):Instruction(name){
+
+}
+
+void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
+    uint8_t imm8;
+    REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0xB0);
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    imm8 = jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    switch(register_kind){
+        case AL:
+            code->mov(al, imm8);
+            break;
+        case CL:
+            code->mov(cl, imm8);
+            break;
+        case DL:
+            code->mov(dl, imm8);
+            break;
+        case BL:
+            code->mov(bl, imm8);
+            break;
+        case AH:
+            code->mov(ah, imm8);
+            break;
+        case CH:
+            code->mov(ch, imm8);
+            break;
+        case DH:
+            code->mov(dh, imm8);
+            break;
+        case BH:
+            code->mov(bh, imm8);
+            break;
+        default:
+            this->Error("Unknown: register_kind=%d\n", register_kind);
+    }
+    return;
+}

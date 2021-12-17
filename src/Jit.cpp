@@ -23,6 +23,9 @@ Jit::Jit(){
     this->instructions[0x8B] = new MovR32Rm32("MovR32Rm32");
     this->instructions[0x90] = new Nop("Nop");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
+        this->instructions[0xB0+i] = new MovR8Imm8("MovR8Imm8");
+    }
+    for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0xB8+i] = new MovR32Imm32("MovR32Imm32");
     }
     this->instructions[0xC3] = new Ret32Near("Ret32Near");

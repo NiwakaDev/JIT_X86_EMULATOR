@@ -165,3 +165,9 @@ class OutDxAl:public Instruction{
         OutDxAl(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class MovR8Imm8:public Instruction{
+    public:
+        MovR8Imm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
