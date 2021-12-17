@@ -9,6 +9,15 @@ using namespace Xbyak;
 //呼び出し規約：
 //https://motojiroxx.hatenablog.com/entry/2018/09/04/005142
 
+void bios_error(uint64_t selector){
+    fprintf(stderr, "Not implemented: selector=0x%02X at bios_error\n", selector);
+    exit(1);
+}
+
+void put(uint8_t data){
+    putchar(data);
+}
+
 static uint8_t in8(uint64_t port){
     switch(port){
         case 0x03F8:
@@ -354,7 +363,7 @@ void MovRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
     const Reg64 r32(rcx);       
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -424,7 +433,7 @@ void MovRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 r32(rcx);       
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -501,7 +510,7 @@ void AddRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 r32(rcx);       
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -592,7 +601,7 @@ void MovR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eflags(rax);
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -662,7 +671,7 @@ CodeFF::CodeFF(string code_name):Instruction(code_name){
 }
 
 void CodeFF::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
@@ -695,7 +704,7 @@ void IncRm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 rm32(rcx);       
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     uint32_t addr;
     uint32_t disp8;
@@ -756,7 +765,7 @@ void JmpRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
     const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
@@ -790,7 +799,7 @@ void CallRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
@@ -828,7 +837,7 @@ void Ret32Near::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     const Reg32 data(esi);
 
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
@@ -860,7 +869,7 @@ void PushR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     code->mov(mem, (size_t)jit->mem);
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x50);
@@ -895,7 +904,7 @@ void Leave::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     code->mov(mem, (size_t)jit->mem);
     //Leave命令
@@ -927,7 +936,7 @@ void PushImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     code->mov(mem, (size_t)jit->mem);
 
@@ -963,7 +972,7 @@ void PopR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 effective_addr(edi); // effective_addr
     const Reg64 mem(rdx);//jit->mem
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     code->mov(mem, (size_t)jit->mem);
 
@@ -999,7 +1008,7 @@ void AddRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
@@ -1062,7 +1071,7 @@ void CmpR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eflags(rax);
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     Reg32 r32;
 
     #ifdef DEBUG
@@ -1131,7 +1140,7 @@ void JleRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
@@ -1166,7 +1175,7 @@ Nop::Nop(string name):Instruction(name){
 }
 
 void Nop::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -1322,7 +1331,7 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
         case AH:
             code->xor_(ecx, ecx);
             code->mov(ch, imm8);
-            code->mov(jit_eax, 0xFFFF00FF);
+            code->and_(jit_eax, 0xFFFF00FF);
             code->or_(jit_eax, ecx);
             break;
         default://TODO:r8~15の8bit目~15bit目にアクセスできるものはないらしく、めんどくさいので後回し
@@ -1377,7 +1386,7 @@ void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
@@ -1422,7 +1431,7 @@ void MovR8Rm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     const Reg32 effective_addr(edi);     
     const Reg64 mem(rdx);
     Reg8  r8;
@@ -1495,7 +1504,7 @@ void IncR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     Reg32 r32;
 
     REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0x40);
@@ -1536,16 +1545,58 @@ void IntImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
     const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     const Reg64 jit_eflags(rax);
-    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。
     Reg32 r32;
-
-    REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0x40);
     #ifdef DEBUG
         code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
         jit->eip += 1;
     #endif
-    this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
+    uint8_t selector = jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->inc(dword [jit_eip]);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    code->mov(rsi, selector);
+    code->cmp(rsi, 0x10);
+    code->je("VIDEO_FUNCTION");
+    code->jmp("NOT_IMPLEMENT");
+    code->L("VIDEO_FUNCTION");
+         /***
+        code->push(rax);
+        code->push(rbx);
+        code->push(rcx);
+        code->push(rdx);
+        code->push(r8);
+        code->push(r9);
+        code->push(r10);
+        code->push(r11);
+        code->push(r12);
+        code->push(r13);
+        code->push(r14);
+        code->push(r15);
+        code->mov(rdi, jit_eax);
+        code->call(put);
+        code->pop(r15);
+        code->pop(r14);
+        code->pop(r13);
+        code->pop(r12);
+        code->pop(r11);
+        code->pop(r10);
+        code->pop(r9);
+        code->pop(r8);
+        code->pop(rdx);
+        code->pop(rcx);
+        code->pop(rbx);
+        code->pop(rax);
+        ***/
+        code->jmp("END");
+    code->L("NOT_IMPLEMENT");
+        code->mov(rdi, selector);
+        code->call(bios_error);
+    code->L("END");
     return;
 }
