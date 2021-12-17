@@ -1,0 +1,2 @@
+#pragma once
+enum REGISTER_KIND {EAX , ECX, EDX, EBX, ESP, EBP, ESI, EDI, REGISTER_KIND_TOTAL};

@@ -31,6 +31,7 @@ Jit::Jit(){
     this->instructions[0xE8] = new CallRel32("CallRel32");
     this->instructions[0xE9] = new JmpRel32("JmpRel32");
     this->instructions[0xEB] = new JmpRel8("JmpRel8");
+    this->instructions[0xEC] = new InAlDx("InAlDx");
     this->instructions[0xFF] = new CodeFF("CodeFF");
     for(int i=0; i<MEM_SIZE; i++){
         this->eip2code[i] = NULL;
@@ -172,20 +173,17 @@ void Jit::Run(){
         code = this->eip2code[this->eip];
     }else{
         uint32_t first_eip = this->eip;
-        if(first_eip==0x7c25){
-            first_eip = first_eip;
-        }
         code = this->CompileBlock();
-        if(first_eip==0x7c25){
+        if(first_eip==0x7c05){
             ToBinary(code);
         }
         this->eip2code[first_eip] = code;
         this->eip = first_eip;
     }
-    fprintf(stderr, "before:\n");
-    this->ShowRegisters();
+    //fprintf(stderr, "before:\n");
+    //this->ShowRegisters();
     void (*f)() = (void (*)())code->getCode();
     f();
-    fprintf(stderr, "after:\n");
-    this->ShowRegisters();
+    //fprintf(stderr, "after:\n");
+    //this->ShowRegisters();
 }

@@ -1,11 +1,10 @@
+#pragma once
 #include "common.h"
-
+#include "CpuEnum.h"
 class Instruction;
 #define  MEM_SIZE 1024 * 1024
 #define INIT_EIP 0x7c00
 #define INSTRUCTION_SIZE 256
-
-enum REGISTER_KIND {EAX , ECX, EDX, EBX, ESP, EBP, ESI, EDI, REGISTER_KIND_TOTAL};
 
 class Jit:public Object{
     public:

@@ -5,6 +5,10 @@ using namespace std;
 using namespace Xbyak::util;
 using namespace Xbyak;
 
+
+//呼び出し規約：
+//https://motojiroxx.hatenablog.com/entry/2018/09/04/005142
+
 Instruction::Instruction(string name){
     this->code_name = name;
 }
@@ -62,6 +66,38 @@ Reg32 Instruction::GetReg32ForRegIdx(){
     const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
     Reg32 r32;       
     switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            return jit_eax;
+        case EBX:
+            return jit_ebx;
+        case ECX:
+            return jit_ecx;
+        case EDX:
+            return jit_edx;
+        case EDI:
+            return jit_edi;
+        case ESI:
+            return jit_esi;
+        case EBP:
+            return jit_ebp;
+        case ESP:
+            return jit_esp;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::GetReg32ForRegIdx", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
+    }
+}
+
+Reg32 Instruction::GetReg32(REGISTER_KIND register_kind){
+    const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+    const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+    const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+    const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+    const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+    const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+    const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+    const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    Reg32 r32;       
+    switch(register_kind){
         case EAX:
             return jit_eax;
         case EBX:
@@ -141,7 +177,7 @@ void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     Reg32 r32;
-    uint8_t register_type = jit->mem[jit->eip]-0xB8;
+    REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0xB8);
     #ifdef DEBUG
         code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -149,7 +185,7 @@ void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #else 
         jit->eip += 1;
     #endif
-    uint32_t imm32 = jit->mem[jit->eip];
+    uint32_t imm32 = *(uint32_t*)(jit->mem+jit->eip);
     #ifdef DEBUG
         code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
@@ -157,7 +193,7 @@ void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #else 
         jit->eip += 4;
     #endif
-    r32 = this->GetReg32ForRegIdx();   
+    r32 = this->GetReg32(register_type);   
     code->mov(r32, imm32);
     return;
 }
@@ -1147,5 +1183,68 @@ void Nop::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
         jit->eip += 1;
     #endif
     code->nop();
+    return;
+}
+
+InAlDx::InAlDx(string name):Instruction(name){
+
+}
+
+uint8_t in8(uint64_t port){
+    switch(port){
+        case 0x03F8:
+            return getchar();
+        default:
+            fprintf(stderr, "Not implemented: port=%08X at in8\n", port);
+            exit(1);
+    }
+}
+
+void InAlDx::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    const Reg8   jit_al(r8b);
+    const Reg16  jit_dx(r11w);
+    const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
+    
+    uint8_t temp_al;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+
+    code->push(rax);
+    code->push(rbx);
+    code->push(rcx);
+    code->push(rdx);
+    code->push(r8);
+    code->push(r9);
+    code->push(r10);
+    code->push(r11);
+    code->push(r12);
+    code->push(r13);
+    code->push(r14);
+    code->push(r15);
+
+    code->mov(rdi, jit_dx);
+    code->call(in8);
+    code->mov(rsi, (size_t)&temp_al);
+    code->mov(byte [rsi], al);
+
+    code->pop(r15);
+    code->pop(r14);
+    code->pop(r13);
+    code->pop(r12);
+    code->pop(r11);
+    code->pop(r10);
+    code->pop(r9);
+    code->pop(r8);
+    code->pop(rdx);
+    code->pop(rcx);
+    code->pop(rbx);
+    code->pop(rax);
+
+    code->mov(r8b, byte [rsi]);
     return;
 }

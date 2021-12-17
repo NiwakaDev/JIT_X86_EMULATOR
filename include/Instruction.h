@@ -1,6 +1,7 @@
+#pragma once
 #include "common.h"
 #include "ModRM.h"
-
+#include "CpuEnum.h"
 class Jit;
 #define INSTRUCTION_SET_SMALL_SIZE 8
 
@@ -13,6 +14,7 @@ class Instruction:public Object{
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Address dest_addr, const Xbyak::Reg64 mem);
         void Pop32(Xbyak::CodeGenerator* code, Jit* jit, const Xbyak::Reg32 dest_reg, const Xbyak::Reg64 mem);
         Xbyak::Reg32 GetReg32ForRegIdx();
+        Xbyak::Reg32 GetReg32(REGISTER_KIND register_kind);
     public:
         std::string code_name;
         Instruction(std::string name);
@@ -149,5 +151,11 @@ class JleRel8:public Instruction{
 class Nop:public Instruction{
     public:
         Nop(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class InAlDx:public Instruction{
+    public:
+        InAlDx(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
