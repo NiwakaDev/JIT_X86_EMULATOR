@@ -171,3 +171,9 @@ class MovR8Imm8:public Instruction{
         MovR8Imm8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class CmpAlImm8:public Instruction{
+    public:
+        CmpAlImm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

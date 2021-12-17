@@ -10,6 +10,7 @@ Jit::Jit(){
     }
     this->instructions[0x01] = new AddRm32R32("AddRm32R32");
     this->instructions[0x3B] = new CmpR32Rm32("CmpR32Rm32");
+    this->instructions[0x3C] = new CmpAlImm8("CmpAlImm8");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0x50+i] = new PushR32("PushR32");
     }
@@ -178,7 +179,7 @@ void Jit::Run(){
     }else{
         uint32_t first_eip = this->eip;
         code = this->CompileBlock();
-        if(first_eip==0x7c05){
+        if(first_eip==0x7c09){
             ToBinary(code);
         }
         this->eip2code[first_eip] = code;

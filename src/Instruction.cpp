@@ -1363,3 +1363,37 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     }
     return;
 }
+
+CmpAlImm8::CmpAlImm8(string name):Instruction(name){
+
+}
+
+void CmpAlImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
+    const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。64bitの理由はjit->eipの番地として扱うから。
+    const Reg64 jit_eflags(rax);//eaxをeflagsとして扱う
+    uint8_t imm8;
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    imm8 = jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    code->cmp(jit_al, imm8);
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
+    return;
+}
