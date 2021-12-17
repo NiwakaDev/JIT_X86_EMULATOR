@@ -1565,7 +1565,6 @@ void IntImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->je("VIDEO_FUNCTION");
     code->jmp("NOT_IMPLEMENT");
     code->L("VIDEO_FUNCTION");
-         /***
         code->push(rax);
         code->push(rbx);
         code->push(rcx);
@@ -1592,7 +1591,6 @@ void IntImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
         code->pop(rcx);
         code->pop(rbx);
         code->pop(rax);
-        ***/
         code->jmp("END");
     code->L("NOT_IMPLEMENT");
         code->mov(rdi, selector);

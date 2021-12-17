@@ -9,9 +9,9 @@ int main(int argc, char** argv){
             fprintf(stderr, "Error: fopen");
             exit(1);
         }
-        fprintf(stderr, "DEBUG\n");
+        //fprintf(stderr, "DEBUG\n");
     #else
-        fprintf(stderr, "NO-DEBUG\n");
+        //fprintf(stderr, "NO-DEBUG\n");
     #endif
 
     if(argc!=2){
@@ -45,7 +45,7 @@ int main(int argc, char** argv){
         if(jit->eip==0){
             //fprintf(stderr, "after:\n");
             //jit->ShowRegisters();
-            fprintf(stderr, "End of program\n");
+            //fprintf(stderr, "End of program\n");
             break;
         }
     }   
