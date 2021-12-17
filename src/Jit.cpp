@@ -88,6 +88,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->push(rbx);
     code->push(rcx);
     code->push(rdx);
+    code->push(rdi);
+    code->push(rsi);
     //code->push(rbp);
     //code->push(rsp);
     code->push(r8);
@@ -157,6 +159,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->pop(r10);
     code->pop(r9);
     code->pop(r8);
+    code->pop(rsi);
+    code->pop(rdi);
     code->pop(rdx);
     code->pop(rcx);
     code->pop(rbx);
