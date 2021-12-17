@@ -1,4 +1,4 @@
-# NIWAKA_JIT_X86
+# JIT_X86_EMULATOR
 これはにわかなjit化されたx86エミュレータです。
 
 ![select](https://github.com/NiwakaDev/NIWAKA_JIT_X86/blob/main/images/select.png)
