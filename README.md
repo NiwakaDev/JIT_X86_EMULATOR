@@ -1,9 +1,10 @@
 # NIWAKA_JIT_X86
 これはにわかなjit化されたx86エミュレータです。
 
+![select](https://github.com/NiwakaDev/NIWAKA_JIT_X86/blob/main/images/select.png)
 
-以下のプログラムが動きます。
 
+上の画像のプログラム:
 ```
 BITS 32
     org 0x7c00
