@@ -18,6 +18,7 @@ Jit::Jit(){
         this->instructions[0x58+i] = new PopR32("PopR32");
     }
     this->instructions[0x6A] = new PushImm8("PushImm8");
+    this->instructions[0x74] = new JzRel8("JzRel8");
     this->instructions[0x7E] = new JleRel8("JleRel8");
     this->instructions[0x83] = new Code83("Code83");
     this->instructions[0x89] = new MovRm32R32("MovRm32R32");

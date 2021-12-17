@@ -177,3 +177,9 @@ class CmpAlImm8:public Instruction{
         CmpAlImm8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class JzRel8:public Instruction{
+    public:
+        JzRel8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

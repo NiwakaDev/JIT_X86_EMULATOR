@@ -1314,7 +1314,13 @@ MovR8Imm8::MovR8Imm8(string name):Instruction(name){
 
 }
 
+//x64ではhigh byteをサポートしていない。
+//例：r8の8bit目から15bit目はない。
 void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
+	const Reg8 jit_bl(r9b); //r8bをjit_alとして扱う。
+	const Reg8 jit_cl(r10b); //r8bをjit_alとして扱う。
+	const Reg8 jit_dl(r11b); //r8bをjit_alとして扱う。
     const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
     uint8_t imm8;
     REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0xB0);
@@ -1335,31 +1341,19 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     switch(register_kind){
         case AL:
-            code->mov(al, imm8);
+            code->mov(jit_al, imm8);
             break;
         case CL:
-            code->mov(cl, imm8);
+            code->mov(jit_cl, imm8);
             break;
         case DL:
-            code->mov(dl, imm8);
+            code->mov(jit_dl, imm8);
             break;
         case BL:
-            code->mov(bl, imm8);
+            code->mov(jit_bl, imm8);
             break;
-        case AH:
-            code->mov(ah, imm8);
-            break;
-        case CH:
-            code->mov(ch, imm8);
-            break;
-        case DH:
-            code->mov(dh, imm8);
-            break;
-        case BH:
-            code->mov(bh, imm8);
-            break;
-        default:
-            this->Error("Unknown: register_kind=%d\n", register_kind);
+        default://TODO:r8~15の8bit目~15bit目にアクセスできるものはないらしく、めんどくさいので後回し
+            this->Error("Not implemented:: register_kind=%d\n", register_kind);
     }
     return;
 }
@@ -1395,5 +1389,51 @@ void CmpAlImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     //フラグ更新処理
     code->pushfq();
     code->pop(jit_eflags);
+    return;
+}
+
+JzRel8::JzRel8(string name):Instruction(name){
+
+}
+
+void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+
+    *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+
+    code->push(jit_eflags);
+    code->popfq();
+    code->jz("L1");
+    code->jmp("L2");
+    code->L("L1");
+    //code->mov(jit_eip, (size_t)&jit->eip);
+    //code->add(dwor [jit_eip], code_size);
+    code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+    code->add(dword [jit_eip], rel8);
+    code->L("L2");
     return;
 }
