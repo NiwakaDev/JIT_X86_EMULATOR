@@ -9,6 +9,28 @@ using namespace Xbyak;
 //呼び出し規約：
 //https://motojiroxx.hatenablog.com/entry/2018/09/04/005142
 
+static uint8_t in8(uint64_t port){
+    switch(port){
+        case 0x03F8:
+            return getchar();
+        default:
+            fprintf(stderr, "Not implemented: port=%08X at in8\n", port);
+            exit(1);
+    }
+}
+
+static void out8(uint64_t port, uint8_t data){
+    //fprintf(stderr, "port=%04X, data=%02X\n", port, data);
+    switch(port){
+        case 0x03F8:
+            putchar(data);
+            break;
+        default:
+            fprintf(stderr, "Not implemented: port=%08X at out8\n", port);
+            exit(1);
+    }
+}
+
 Instruction::Instruction(string name){
     this->code_name = name;
 }
@@ -1190,16 +1212,6 @@ InAlDx::InAlDx(string name):Instruction(name){
 
 }
 
-uint8_t in8(uint64_t port){
-    switch(port){
-        case 0x03F8:
-            return getchar();
-        default:
-            fprintf(stderr, "Not implemented: port=%08X at in8\n", port);
-            exit(1);
-    }
-}
-
 void InAlDx::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg8   jit_al(r8b);
     const Reg16  jit_dx(r11w);
@@ -1246,5 +1258,54 @@ void InAlDx::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->pop(rax);
 
     code->mov(r8b, byte [rsi]);
+    return;
+}
+
+OutDxAl::OutDxAl(string name):Instruction(name){
+
+}
+
+void OutDxAl::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    const Reg8   jit_al(r8b);
+    const Reg16  jit_dx(r11w);
+    const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
+    
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+
+    code->push(rax);
+    code->push(rbx);
+    code->push(rcx);
+    code->push(rdx);
+    code->push(r8);
+    code->push(r9);
+    code->push(r10);
+    code->push(r11);
+    code->push(r12);
+    code->push(r13);
+    code->push(r14);
+    code->push(r15);
+
+    code->mov(rsi, jit_al);
+    code->mov(rdi, jit_dx);
+    code->call(out8);
+
+    code->pop(r15);
+    code->pop(r14);
+    code->pop(r13);
+    code->pop(r12);
+    code->pop(r11);
+    code->pop(r10);
+    code->pop(r9);
+    code->pop(r8);
+    code->pop(rdx);
+    code->pop(rcx);
+    code->pop(rbx);
+    code->pop(rax);
     return;
 }

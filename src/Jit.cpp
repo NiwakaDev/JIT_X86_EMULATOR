@@ -32,6 +32,7 @@ Jit::Jit(){
     this->instructions[0xE9] = new JmpRel32("JmpRel32");
     this->instructions[0xEB] = new JmpRel8("JmpRel8");
     this->instructions[0xEC] = new InAlDx("InAlDx");
+    this->instructions[0xEE] = new OutDxAl("OutDxAl");
     this->instructions[0xFF] = new CodeFF("CodeFF");
     for(int i=0; i<MEM_SIZE; i++){
         this->eip2code[i] = NULL;

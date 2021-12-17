@@ -159,3 +159,9 @@ class InAlDx:public Instruction{
         InAlDx(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class OutDxAl:public Instruction{
+    public:
+        OutDxAl(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
