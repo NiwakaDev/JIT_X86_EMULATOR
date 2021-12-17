@@ -12,6 +12,9 @@ Jit::Jit(){
     this->instructions[0x3B] = new CmpR32Rm32("CmpR32Rm32");
     this->instructions[0x3C] = new CmpAlImm8("CmpAlImm8");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
+        this->instructions[0x40+i] = new IncR32("IncR32");
+    }
+    for(int i=0; i<REGISTER_KIND_TOTAL; i++){
         this->instructions[0x50+i] = new PushR32("PushR32");
     }
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){
@@ -75,7 +78,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg32 jit_eflags(eax);//eaxをeflagsとして扱う
-    const Reg64 save_registers(rbx);//これは番地として扱うので、64bitレジスタ
+    const Reg64 jit_eip(rbx);//これは番地として扱うので、64bitレジスタ
+    const Reg64 save_registers(rcx);//これは番地として扱うので、64bitレジスタ
 
     bool stop = false;
     code->push(rbp);
@@ -84,8 +88,6 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->push(rbx);
     code->push(rcx);
     code->push(rdx);
-    code->push(rdi);
-    code->push(rsi);
     //code->push(rbp);
     //code->push(rsp);
     code->push(r8);
@@ -97,6 +99,8 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->push(r14);
     code->push(r15);
 
+    //何故、即値を入れないか?
+    //->1度目の実行時の値が固定されては困るから。
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(jit_eax, dword [save_registers]);    //eaxをjit_eaxに割り当て
     code->mov(jit_ecx, dword [save_registers+1*4]);//ecxをjit_eaxに割り当て
@@ -106,7 +110,9 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->mov(jit_ebp, dword [save_registers+5*4]);//ebpをjit_eaxに割り当て
     code->mov(jit_esi, dword [save_registers+6*4]);//esiをjit_eaxに割り当て
     code->mov(jit_edi, dword [save_registers+7*4]);//ediをjit_eaxに割り当て
+    code->mov(jit_eip, (size_t)&this->eip);
 
+    //code->mov(jit_eip, this->eip);
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(jit_eflags, dword [save_registers]);
@@ -121,6 +127,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
             stop = true;//デバッグ時は1つの機械語命令でコンパイルを終了。
         #endif
     }
+
     //eaxを保存
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(dword [save_registers], jit_eax);
@@ -141,7 +148,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(dword [save_registers], jit_eflags);
-
+    
     code->pop(r15);
     code->pop(r14);
     code->pop(r13);
@@ -150,10 +157,6 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     code->pop(r10);
     code->pop(r9);
     code->pop(r8);
-    //code->pop(rsp);
-    //code->pop(rbp);
-    code->pop(rsi);
-    code->pop(rdi);
     code->pop(rdx);
     code->pop(rcx);
     code->pop(rbx);

@@ -43,7 +43,6 @@ inline void Instruction::ParseModRM(Jit* jit, CodeGenerator* code){
     this->modrm.rm = op_code & 0x07;
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip++;
     #else 
@@ -58,7 +57,6 @@ inline void Instruction::ParseModRM(Jit* jit, CodeGenerator* code){
         //this->modrm.disp32 = emu->mem->Read32(jit->GetLinearAddrForCodeAccess());
         this->modrm.disp32 = *(uint32_t*)(jit->mem+jit->eip);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 4;
     #else 
@@ -68,7 +66,6 @@ inline void Instruction::ParseModRM(Jit* jit, CodeGenerator* code){
         //this->modrm.disp8 = emu->mem->Read8(jit->GetLinearAddrForCodeAccess());
         this->modrm.disp8 = jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -201,7 +198,6 @@ void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     Reg32 r32;
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0xB8);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -209,7 +205,6 @@ void MovR32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     uint32_t imm32 = *(uint32_t*)(jit->mem+jit->eip);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 4;
     #else 
@@ -236,7 +231,6 @@ void JmpRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -244,7 +238,6 @@ void JmpRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->mov(dword [jit_eip], jit->eip+1+rel8);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip = jit->eip+1+rel8;
     #else 
@@ -272,7 +265,6 @@ void Code83::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);
         code->add(dword [jit_eip], 1);
         jit->eip++;
     #else
@@ -304,7 +296,6 @@ void SubRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとして扱う。
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -366,7 +357,6 @@ void MovRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -437,7 +427,6 @@ void MovRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -446,7 +435,6 @@ void MovRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     this->ParseModRM(jit, code);
     uint32_t imm32 = jit->Read32(jit->eip);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 4;
     #else 
@@ -516,7 +504,6 @@ void AddRm32R32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -608,7 +595,6 @@ void MovR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -678,7 +664,6 @@ CodeFF::CodeFF(string code_name):Instruction(code_name){
 void CodeFF::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -775,7 +760,6 @@ void JmpRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -783,7 +767,6 @@ void JmpRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     uint32_t rel32 = jit->Read32(jit->eip);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->mov(dword [jit_eip], jit->eip + rel32 + 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip = jit->eip + rel32 + 4;
     #else 
@@ -811,7 +794,6 @@ void CallRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -823,7 +805,6 @@ void CallRel32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     //ジャンプ
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->mov(dword [jit_eip], jit->eip + rel32 + 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip = jit->eip + rel32 + 4;
     #else 
@@ -852,7 +833,6 @@ void Ret32Near::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     *stop = true;//call命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -885,7 +865,6 @@ void PushR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->mov(mem, (size_t)jit->mem);
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x50);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -923,7 +902,6 @@ void Leave::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     //ESPにEBPを格納する
     //スタックからPOPし、EBPに格納する
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -954,7 +932,6 @@ void PushImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->mov(mem, (size_t)jit->mem);
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -962,7 +939,6 @@ void PushImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     uint32_t imm32 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -993,7 +969,6 @@ void PopR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     REGISTER_KIND register_type = (REGISTER_KIND)(jit->mem[jit->eip]-0x58);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1028,7 +1003,6 @@ void AddRm32Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     uint32_t imm8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1092,7 +1066,6 @@ void CmpR32Rm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     Reg32 r32;
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1162,7 +1135,6 @@ void JleRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1170,7 +1142,6 @@ void JleRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1198,7 +1169,6 @@ void Nop::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1219,7 +1189,6 @@ void InAlDx::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     
     uint8_t temp_al;
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1271,7 +1240,6 @@ void OutDxAl::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64  jit_eip(rbx);//jit_eipとしてここで扱う。
     
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1325,7 +1293,6 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     uint8_t imm8;
     REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0xB0);
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1333,7 +1300,6 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     imm8 = jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1368,7 +1334,6 @@ void CmpAlImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     const Reg64 jit_eflags(rax);//eaxをeflagsとして扱う
     uint8_t imm8;
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1376,7 +1341,6 @@ void CmpAlImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     imm8 = jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1410,7 +1374,6 @@ void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
 
     *stop = true;//jmp命令では次にどこに飛べば良いかわからず、制御を本体に戻す。
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1418,7 +1381,6 @@ void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     #endif
     int32_t rel8 = (int32_t)(int8_t)jit->mem[jit->eip];
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1458,7 +1420,6 @@ void MovR8Rm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     Reg8  r8;
 
     #ifdef DEBUG
-        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
         code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
         jit->eip += 1;
     #else 
@@ -1509,5 +1470,46 @@ void MovR8Rm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     }else if(this->modrm.mod==3){
         this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
     }
+    return;
+}
+
+IncR32::IncR32(string name):Instruction(name){
+
+}
+
+void IncR32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg32 jit_eax(r8d);   //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d);   //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);  //r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);  //r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);  //r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);  //r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);  //r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);  //r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    Reg32 r32;
+
+    REGISTER_KIND register_kind = (REGISTER_KIND)(jit->mem[jit->eip]-0x40);
+    #ifdef DEBUG
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+
+    switch(register_kind){
+        case ESI:
+            code->inc(jit_esi);
+            break;
+        default:
+            this->Error("Not implemented: register_kind=%d at %s::CompileStep", register_kind, this->code_name.c_str());
+    }
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
     return;
 }
