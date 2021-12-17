@@ -183,3 +183,9 @@ class JzRel8:public Instruction{
         JzRel8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class MovR8Rm8:public Instruction{
+    public:
+        MovR8Rm8(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

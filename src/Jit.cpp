@@ -22,6 +22,7 @@ Jit::Jit(){
     this->instructions[0x7E] = new JleRel8("JleRel8");
     this->instructions[0x83] = new Code83("Code83");
     this->instructions[0x89] = new MovRm32R32("MovRm32R32");
+    this->instructions[0x8A] = new MovR8Rm8("MovR8Rm8");
     this->instructions[0x8B] = new MovR32Rm32("MovR32Rm32");
     this->instructions[0x90] = new Nop("Nop");
     for(int i=0; i<REGISTER_KIND_TOTAL; i++){

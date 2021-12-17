@@ -1437,3 +1437,77 @@ void JzRel8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->L("L2");
     return;
 }
+
+MovR8Rm8::MovR8Rm8(string name):Instruction(name){
+
+}
+
+void MovR8Rm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+	const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+	const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+	const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+	const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+	const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+	const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+	const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+    const Reg64 jit_eflags(rax);//raxをeflagsとして扱う
+    const Reg64 jit_eip(rbx);//jit_eipとしてここで扱う。この命令だけ。
+    const Reg32 effective_addr(edi);     
+    const Reg64 mem(rdx);
+    Reg8  r8;
+
+    #ifdef DEBUG
+        code->mov(jit_eip, (size_t)&jit->eip);//ブロックの終わりの番地を入れたら良いかも?
+        code->add(dword [jit_eip], 1);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+        jit->eip += 1;
+    #else 
+        jit->eip += 1;
+    #endif
+    this->ParseModRM(jit, code);
+    
+    code->mov(mem, (size_t)jit->mem);
+
+    uint32_t rm8;
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+    
+    switch((REGISTER_KIND)this->modrm.reg_index){
+        case EAX:
+            r8 = al;
+            break;
+        default:
+            this->Error("Not implemented: (REGISTER_KIND)this->modrm.reg_index=%d at %s::CompileStep", (REGISTER_KIND)this->modrm.reg_index, this->code_name.c_str());
+    }
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        if(this->modrm.rm==5){
+            this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
+        }
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+        }
+        switch ((REGISTER_KIND)this->modrm.rm){
+            case ESI:
+                code->mov(effective_addr, jit_esi);
+                break;
+            default:
+                this->Error("Not implemented: register_type=%d at %s::CompileStep\n", this->modrm.rm, this->code_name.c_str());
+                break;
+        }
+        code->add(mem, effective_addr);
+        code->mov(al, byte [mem]);
+    }else if(this->modrm.mod==1){
+        this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
+    }else if(this->modrm.mod==3){
+        this->Error("Not implemented: %s::CompileStep", this->code_name.c_str());
+    }
+    return;
+}
