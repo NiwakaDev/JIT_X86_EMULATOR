@@ -1285,6 +1285,7 @@ MovR8Imm8::MovR8Imm8(string name):Instruction(name){
 //x64ではhigh byteをサポートしていない。
 //例：r8の8bit目から15bit目はない。
 void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+	const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
 	const Reg8 jit_al(r8b); //r8bをjit_alとして扱う。
 	const Reg8 jit_bl(r9b); //r8bをjit_alとして扱う。
 	const Reg8 jit_cl(r10b); //r8bをjit_alとして扱う。
@@ -1318,8 +1319,14 @@ void MovR8Imm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
         case BL:
             code->mov(jit_bl, imm8);
             break;
+        case AH:
+            code->xor_(ecx, ecx);
+            code->mov(ch, imm8);
+            code->mov(jit_eax, 0xFFFF00FF);
+            code->or_(jit_eax, ecx);
+            break;
         default://TODO:r8~15の8bit目~15bit目にアクセスできるものはないらしく、めんどくさいので後回し
-            this->Error("Not implemented:: register_kind=%d\n", register_kind);
+            this->Error("Not implemented:: register_kind=%d at %s::CompileStep\n", register_kind, this->code_name.c_str());
     }
     return;
 }

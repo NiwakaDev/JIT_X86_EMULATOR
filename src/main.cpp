@@ -30,7 +30,7 @@ int main(int argc, char** argv){
     //jit->ShowRegisters();
     int idx=0;
     while(jit->eip<MEM_SIZE){
-        if(idx==18){
+        if(idx==11){
             idx = idx;
         }
         #ifdef DEBUG
