@@ -1240,3 +1240,82 @@ void IntImm8::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
     code->outLocalLabel();
     return;
 }
+
+Code81::Code81(string name):Instruction(name){
+    for(int i=0; i<INSTRUCTION_SET_SMALL_SIZE; i++){
+        this->instructions[i] = NULL;
+    }
+    this->instructions[7] = new CmpRm32Imm32("CmpRm32Imm32");
+}
+
+void Code81::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    code->inc(dword [jit_eip]);
+    jit->eip++;
+
+    this->ParseModRM(jit, code);
+    if(this->instructions[this->modrm.reg_index]==NULL){
+            this->Error("code 81 /%02X is not implemented %s::Run", this->modrm.reg_index, this->code_name.c_str());
+    }
+    this->instructions[this->modrm.reg_index]->SetModRM(&this->modrm);
+    this->instructions[this->modrm.reg_index]->CompileStep(code, stop, jit);
+    return;
+}
+
+CmpRm32Imm32::CmpRm32Imm32(string name):Instruction(name){
+
+}
+
+void CmpRm32Imm32::CompileStep(CodeGenerator* code, bool* stop, Jit* jit){
+    const Reg32 effective_addr(edi);     
+    const Reg64 mem(rdx);
+
+    uint32_t addr;
+    uint32_t disp8;
+    uint32_t disp32;
+
+    code->mov(mem, (size_t)jit->mem);
+    uint32_t imm32 = *(uint32_t*)(jit->mem+jit->eip);
+    code->add(dword [jit_eip], 4);//加算する前の値をコード領域に渡す。そうでないと、2回加算することになる。
+    jit->eip += 4;
+
+    //TODO:
+    //アドレッシングモードは関数化すべき。
+    if(this->modrm.mod!=3 && this->modrm.rm==4){
+        this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+    }
+    if(this->modrm.mod==0){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+        }
+        if(this->modrm.rm==5){
+            this->Error("Not implemented: modrm.rm==0&&modrm.rm==5 at %s::CompileStep", this->code_name.c_str());
+        }
+    }else if(this->modrm.mod==1){
+        if(this->modrm.rm==4){
+            this->Error("Not implemented: sib at %s::CompileStep", this->code_name.c_str());
+        }
+        disp8 = (int32_t)this->modrm.disp8;
+        switch ((REGISTER_KIND)this->modrm.rm){
+            case EBP:
+                code->mov(effective_addr, disp8);
+                code->add(effective_addr, jit_ebp);
+                break;
+            default:
+                this->Error("Not implemented: register_type=%d at %s::CompileStep\n", this->modrm.rm, this->code_name.c_str());
+                break;
+        }
+        code->add(mem, effective_addr);
+        code->cmp(dword [mem], imm32);
+    }else if(this->modrm.mod==2){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
+    }else if(this->modrm.mod==3){
+        this->Error("Not implemented: this->modrm.mod=%d at %s::CompileStep", this->modrm.mod, this->code_name.c_str());
+    }
+    //TODO:
+    //余計なフラグ情報まで更新している。
+    //特定のフラグのみを更新するようにすべき。
+    //フラグ更新処理
+    code->pushfq();
+    code->pop(jit_eflags);
+    return;
+}

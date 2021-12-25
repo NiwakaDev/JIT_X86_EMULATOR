@@ -201,3 +201,17 @@ class IntImm8:public Instruction{
         IntImm8(std::string name);
         void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
 };
+
+class Code81:public Instruction{
+    private:
+        Instruction* instructions[INSTRUCTION_SET_SMALL_SIZE];
+    public: 
+        Code81(std::string code_name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};
+
+class CmpRm32Imm32:public Instruction{
+    public:
+        CmpRm32Imm32(std::string name);
+        void CompileStep(Xbyak::CodeGenerator* code, bool* stop, Jit* jit);
+};

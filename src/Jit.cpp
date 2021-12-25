@@ -39,6 +39,7 @@ Jit::Jit(){
     this->instructions[0x6A] = new PushImm8("PushImm8");
     this->instructions[0x74] = new JzRel8("JzRel8");
     this->instructions[0x7E] = new JleRel8("JleRel8");
+    this->instructions[0x81] = new Code81("Code81");
     this->instructions[0x83] = new Code83("Code83");
     this->instructions[0x89] = new MovRm32R32("MovRm32R32");
     this->instructions[0x8A] = new MovR8Rm8("MovR8Rm8");
@@ -122,7 +123,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(jit_eflags, dword [save_registers]);
-    
+
     while(!stop){
         uint8_t op_code = this->mem[this->eip];
         if(this->instructions[op_code]==NULL){

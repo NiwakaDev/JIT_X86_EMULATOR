@@ -43,7 +43,7 @@ int main(int argc, char** argv){
         if(jit->eip==0){
         //if(jit->save_registers_[EAX]==37){
             //fprintf(stderr, "after:\n");
-            //jit->ShowRegisters();
+            jit->ShowRegisters();
             //fprintf(stderr, "End of program\n");
             break;
         }
