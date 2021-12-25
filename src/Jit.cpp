@@ -1,6 +1,22 @@
 #include "Jit.h"
 #include "Instruction.h"
 
+using namespace Xbyak::util;
+using namespace Xbyak;
+
+static const Xbyak::Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
+static const Xbyak::Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
+static const Xbyak::Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
+static const Xbyak::Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
+static const Xbyak::Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
+static const Xbyak::Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
+static const Xbyak::Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
+static const Xbyak::Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
+static const Xbyak::Reg32 jit_eflags(eax);//eaxをeflagsとして扱う
+static const Xbyak::Reg64 jit_eip(rbx);//これは番地として扱うので、64bitレジスタ
+static const Xbyak::Reg64 save_registers(rcx);//これは番地として扱うので、64bitレジスタ
+
+
 Jit::Jit(){
     this->mem = (uint8_t*)malloc(MEM_SIZE);
     this->eip = 0;//内田さんの本では0
@@ -67,20 +83,7 @@ uint32_t Jit::Read32(uint32_t addr){
 }
 
 Xbyak::CodeGenerator* Jit::CompileBlock(){
-    using namespace Xbyak::util;
-    using namespace Xbyak;
-    Xbyak::CodeGenerator* code = new Xbyak::CodeGenerator();
-    const Reg32 jit_eax(r8d); //r8dをjit_eaxとして扱う。
-    const Reg32 jit_ebx(r9d); //r9dをjit_ebxとして扱う。
-    const Reg32 jit_ecx(r10d);//r10dをjit_ecxとして扱う。
-    const Reg32 jit_edx(r11d);//r11dをjit_edxとして扱う。
-    const Reg32 jit_edi(r12d);//r12dをjit_ediとして扱う。
-    const Reg32 jit_esi(r13d);//r13dをjit_esiとして扱う。
-    const Reg32 jit_ebp(r14d);//r14dをjit_ebpとして扱う。
-    const Reg32 jit_esp(r15d);//r15dをjit_espとして扱う。
-    const Reg32 jit_eflags(eax);//eaxをeflagsとして扱う
-    const Reg64 jit_eip(rbx);//これは番地として扱うので、64bitレジスタ
-    const Reg64 save_registers(rcx);//これは番地として扱うので、64bitレジスタ
+    CodeGenerator* code = new CodeGenerator(128, AutoGrow);
 
     bool stop = false;
     code->push(rbp);
@@ -119,6 +122,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
     //eflagsを保存
     code->mov(save_registers, (size_t)&this->eflags.raw);
     code->mov(jit_eflags, dword [save_registers]);
+    
     while(!stop){
         uint8_t op_code = this->mem[this->eip];
         if(this->instructions[op_code]==NULL){
@@ -129,10 +133,9 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
         #ifdef DEBUG
             stop = true;//デバッグ時は1つの機械語命令でコンパイルを終了。
         #else 
-            stop = true;//通常時でも同じく。理由はREADME.mdに書いてます。
+            //stop = false;//通常時でも同じく。理由はREADME.mdに書いてます。
         #endif
     }
-
     //eaxを保存
     code->mov(save_registers, (size_t)&this->save_registers_);
     code->mov(dword [save_registers], jit_eax);
@@ -178,14 +181,14 @@ bool Jit::IsCompiledBlock(uint32_t eip){
     return this->eip2code[eip]!=NULL;
 }
 
-void ToBinary(Xbyak::CodeGenerator* code){
+void ToBinary(CodeGenerator* code){
     FILE* binary = fopen("binary.bin", "wb");
     fwrite(code->getCode(), 1, code->getSize(), binary);
     fclose(binary);
 }
 
 void Jit::Run(){
-    Xbyak::CodeGenerator* code;
+    CodeGenerator* code;
     if(this->IsCompiledBlock(this->eip)){
         code = this->eip2code[this->eip];
     }else{
@@ -196,6 +199,7 @@ void Jit::Run(){
     }
     //fprintf(stderr, "before:\n");
     //this->ShowRegisters();
+    code->ready();
     void (*f)() = (void (*)())code->getCode();
     f();
     //fprintf(stderr, "after:\n");
