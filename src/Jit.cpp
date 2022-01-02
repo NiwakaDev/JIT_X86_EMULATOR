@@ -62,7 +62,7 @@ Jit::Jit(){
     this->instructions[0xEE] = new OutDxAl("OutDxAl");
     this->instructions[0xFF] = new CodeFF("CodeFF");
     for(int i=0; i<MEM_SIZE; i++){
-        this->eip2code[i] = NULL;
+        this->eip2block[i] = NULL;
     }
 }
 
@@ -179,7 +179,7 @@ Xbyak::CodeGenerator* Jit::CompileBlock(){
 }
 
 bool Jit::IsCompiledBlock(uint32_t eip){
-    return this->eip2code[eip]!=NULL;
+    return this->eip2block[eip]!=NULL;
 }
 
 void ToBinary(CodeGenerator* code){
@@ -190,19 +190,18 @@ void ToBinary(CodeGenerator* code){
 
 void Jit::Run(){
     CodeGenerator* code;
+    Block* block;
     if(this->IsCompiledBlock(this->eip)){
-        code = this->eip2code[this->eip];
+        block = this->eip2block[this->eip];
     }else{
         uint32_t first_eip = this->eip;
         code = this->CompileBlock();
-        this->eip2code[first_eip] = code;
+        code->ready();
+        block = (void (*)())code->getCode();
+        this->eip2block[first_eip] = block;
         this->eip = first_eip;
     }
-    //fprintf(stderr, "before:\n");
-    //this->ShowRegisters();
-    code->ready();
-    void (*f)() = (void (*)())code->getCode();
-    f();
-    //fprintf(stderr, "after:\n");
-    //this->ShowRegisters();
+    //code->ready();
+    //void (*f)() = (void (*)())code->getCode();
+    block();
 }

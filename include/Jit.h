@@ -6,13 +6,16 @@ class Instruction;
 #define INIT_EIP 0x7c00
 #define INSTRUCTION_SIZE 256
 
+typedef void Block(void);
+
 class Jit:public Object{
     public:
         Instruction* instructions[INSTRUCTION_SIZE];
         uint8_t* mem;
         uint32_t eip;
         uint32_t save_registers_[REGISTER_KIND_TOTAL];//保存領域
-        Xbyak::CodeGenerator* eip2code[MEM_SIZE];     
+        //Xbyak::CodeGenerator* eip2code[MEM_SIZE];  
+        Block* eip2block[MEM_SIZE];   
         Jit();
         void Run();
         Xbyak::CodeGenerator* CompileBlock();
